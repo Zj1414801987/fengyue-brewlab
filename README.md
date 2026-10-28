@@ -12,6 +12,12 @@ Windows 10/11　|　Android 7.0+　|　完全离线，不联网、不上传、�
 
 <div align="center">
 
+[**下载 Windows 版**](https://github.com/Zj1414801987/fengyue-brewlab/releases/latest)　·　[**下载 Android 版**](https://github.com/Zj1414801987/fengyue-brewlab/releases/latest)　·　**交流群 766808715**
+
+</div>
+
+<div align="center">
+
 <img src="assets/preview-main.png" alt="风月酿研所 · 配方编辑界面" width="880">
 
 <sub>配方编辑：左栏原料、中栏参数、右栏实时指标——改一个数，全表联动</sub>
@@ -183,13 +189,13 @@ BL2.eyJ0IjoicmVjaXBlIiwidi......（后面是一长串字母数字）
 
 ## 下载与安装
 
-前往 [Releases](../../releases) 页面下载最新版本：
+最新版本见 **[Releases](https://github.com/Zj1414801987/fengyue-brewlab/releases/latest)**：
 
-| 文件 | 说明 |
-|---|---|
-| `风月酿研所_Windows_vX.Y_安装程序.exe` | **推荐**。双击安装，自动创建桌面与开始菜单快捷方式，可在"设置 → 应用"中正常卸载 |
-| `风月酿研所（绿色版）.zip` | 解压即用，不写注册表。适合放 U 盘带走 |
-| `风月酿研所_Android_vX.Y.apk` | 安卓版（早期版本，导出与打印仍在完善中） |
+| 文件 | 大小 | 说明 |
+|---|---|---|
+| `FengYue-BrewLab_Windows_v1.3_Setup.exe` | 101 MB | **推荐**。双击安装，自动创建桌面与开始菜单快捷方式，可在"设置 → 应用"中正常卸载 |
+| `FengYue-BrewLab_Windows_v1.3_Portable.zip` | 141 MB | 解压即用，不写注册表。适合放 U 盘带走 |
+| `FengYue-BrewLab_Android_v0.1_debug.apk` | 5.4 MB | 安卓版（早期版本：导出、打印仍在完善中，仅建议试用） |
 
 **安装版说明**
 
