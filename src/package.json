@@ -5,7 +5,7 @@
   "description": "风月酿研所 · 精酿配方与酿造记录（本地优先，完全离线）",
   "main": "main.js",
   "author": "Jun Z",
-  "license": "SEE LICENSE IN ../LICENSE",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "start": "electron .",

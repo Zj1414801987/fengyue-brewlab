@@ -1,33 +1,21 @@
-# 授权说明
+MIT License
 
-Copyright © 2026 风月酿研所 · Jun Z
+Copyright (c) 2026 风月酿研所 · Jun Z
 
-本仓库的源代码公开，是为了让使用者能看清软件到底怎么算、数据存在哪里，
-以及让愿意帮忙的人能提交 Issue 和 Pull Request。
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-## 你可以
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-- 阅读、下载、fork 本仓库
-- 自行编译、修改，**供自己使用**
-- 提交 Issue、Pull Request
-- 在文章、视频里引用代码片段并注明来源
-
-## 你需要
-
-- 二次分发编译产物时，保留原作者署名与「风月酿研所」名称，不得冒名发布
-- 转载或引用时注明出处
-
-## 你不可以
-
-- 将本软件（含修改版）打包后**售卖**、上架应用商店收费，或用于商业分发
-- 移除、隐藏软件内「关于」页的作者与联系方式后发布
-- 用本仓库代码申请软件著作权、商标或专利
-
-## 不提供担保
-
-本软件按「现状」提供，不附带任何明示或暗示的担保。
-配方计算结果仅供参考，酿造安全与饮用合规由使用者自行负责。
-
----
-
-如需商业授权，请通过软件「关于」页的联系方式联系作者。
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

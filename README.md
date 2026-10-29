@@ -12,7 +12,7 @@ Windows 10/11　|　Android 7.0+　|　完全离线，不联网、不上传、�
 
 <div align="center">
 
-[**下载 Windows 版**](https://github.com/Zj1414801987/fengyue-brewlab/releases/latest)　·　[**下载 Android 版**](https://github.com/Zj1414801987/fengyue-brewlab/releases/latest)　·　**交流群 766808715**
+[**在线试用（免安装）**](https://zj1414801987.github.io/fengyue-brewlab/)　·　[**下载 Windows 版**](https://github.com/Zj1414801987/fengyue-brewlab/releases/latest)　·　[**下载 Android 版**](https://github.com/Zj1414801987/fengyue-brewlab/releases/latest)　·　**交流群 766808715**
 
 </div>
 
@@ -270,6 +270,8 @@ build/
 └─ installer.nsi      NSIS 安装包脚本（参考模板）
 ```
 
+网页版由 GitHub Pages 托管，直接打开 <https://zj1414801987.github.io/fengyue-brewlab/> 就能用，数据存在浏览器 localStorage，与桌面版各自独立。
+
 **本地运行**
 
 ```bash
@@ -291,7 +293,7 @@ npm start
 - **计算内核与界面分离**：`js/2x` 是纯计算、`js/4x` 是渲染，改界面不会碰到算错的风险面。
 - **升级要清旧 exe**：主程序文件名带版本号，覆盖安装不清理会残留 200MB+ 的旧版，脚本里已用通配符删除。
 
-授权范围见 [LICENSE](LICENSE)：可读、可自行编译自用、欢迎提 PR；请勿二次打包售卖或冒名发布。
+授权：**MIT**，见 [LICENSE](LICENSE)。可以商用、可以改、可以再分发，唯一要求是保留版权声明与许可文本。也欢迎提 PR。
 
 ---
 
@@ -299,7 +301,7 @@ npm start
 
 | 版本 | 平台 | 主要变化 |
 |---|---|---|
-| v1.3 | Windows | 关于页补充联系方式（微信 / QQ / QQ 群，均可一键复制） |
+| v1.3 | Windows / Web | 关于页补充联系方式；公开源码并改为 MIT 许可；上线在线试用版 |
 | v1.2 | Windows | 关于页重做：新增特点与作者；窗口高度自适应；数据目录路径显示修正 |
 | v1.1 | Windows | 窗口按屏幕自适应、缩放记忆、品牌统一、asar 打包、升级清理旧版 |
 | v1.0 | Windows | 首个桌面版：原生菜单、使用说明、单实例、启动自动备份 |
@@ -332,7 +334,7 @@ npm start
 ---
 
 **免费使用，欢迎转载分享给同样在酿酒的人。**
-软件不收费、无广告、无账号；源码已公开（见 [源码](#源码)），可自行编译自用、欢迎提 PR。请勿二次打包售卖，或抹掉作者信息后冒名发布。
+软件不收费、无广告、无账号；源码以 **MIT** 许可公开（见 [源码](#源码)），可自行编译、修改、商用、再分发，保留版权声明即可。
 
 © 2026 风月酿研所 · Jun Z
 
