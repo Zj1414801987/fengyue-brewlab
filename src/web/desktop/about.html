@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>关于 · 风月酿研所</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:#12100d;color:#e9e2d4;
+    font:14px/1.7 "Microsoft YaHei","PingFang SC","Segoe UI",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;user-select:none;overflow-y:auto}
+  body::-webkit-scrollbar{width:8px}
+  body::-webkit-scrollbar-thumb{background:#3a3227;border-radius:4px}
+  body::-webkit-scrollbar-track{background:transparent}
+
+  .wrap{padding:16px 24px 10px;text-align:center}
+  .mark{width:56px;height:56px;margin:0 auto 7px;display:block;
+    filter:drop-shadow(0 6px 16px rgba(232,163,61,.22))}
+  h1{margin:0;font-size:18px;letter-spacing:2px}
+  .tagline{margin:4px 0 0;color:#9a9082;font-size:12px;letter-spacing:.5px}
+  .ver{margin:9px 0 0;font-family:Consolas,monospace;font-size:12.5px;color:#e8a33d}
+
+  .card{background:#1b1813;border:1px solid #332c22;border-radius:9px;
+    padding:9px 13px;margin:8px 0 0;text-align:left}
+  .card h2{margin:0 0 8px;font-size:11.5px;font-weight:600;color:#8e8575;
+    letter-spacing:1.6px}
+  .feat{margin:0;padding:0;list-style:none}
+  .feat li{position:relative;padding-left:13px;margin:4px 0;
+    font-size:12.5px;line-height:1.68;color:#cfc4ae}
+  .feat li::before{content:"";position:absolute;left:0;top:.66em;width:4px;height:4px;
+    border-radius:50%;background:#5c5346}
+  .feat li b{color:#e0d5c0;font-weight:600}
+  .feat li.is-key{color:#e6dcc8}
+  .feat li.is-key::before{background:#e8a33d;box-shadow:0 0 0 3px rgba(232,163,61,.14)}
+  .feat li.is-key b{color:#f0c98a}
+
+  .rows{width:100%}
+  .row{display:flex;justify-content:space-between;gap:14px;padding:4px 0;font-size:12px}
+  .row + .row{border-top:1px dashed #2b251c}
+  .k{color:#8e8575;flex:0 0 auto}
+  .v{color:#cfc4ae;text-align:right;word-break:break-all;font-family:Consolas,monospace;font-size:11px}
+
+  .author{display:flex;align-items:center;gap:11px}
+  .avatar{width:42px;height:42px;border-radius:50%;flex:0 0 auto;
+    background:radial-gradient(circle at 34% 28%, #3a2d19, #1d1811 72%);
+    border:1px solid #463a27;display:flex;align-items:center;justify-content:center;
+    font-size:14px;letter-spacing:.5px;color:#e8a33d;font-weight:600}
+  .who{flex:1 1 auto;min-width:0;text-align:left}
+  .who .name{font-size:13.5px;color:#e9e2d4;letter-spacing:.6px}
+  .who .role{margin-top:1px;font-size:11.5px;color:#8e8575}
+  .contacts{margin-top:9px}
+  .cline{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:12px}
+  .cline + .cline{border-top:1px dashed #2b251c}
+  .ck{flex:0 0 34px;color:#8e8575;font-size:11.5px}
+  .cv{flex:1 1 auto;min-width:0;color:#cfc4ae;font-family:Consolas,monospace;font-size:12px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cnote{margin-left:7px;font-family:inherit;font-size:11px;color:#7c7365}
+  .copy{flex:0 0 auto;background:#241f18;border:1px solid #3a3227;color:#d9cfba;
+    border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;font-family:inherit}
+  .copy:hover{border-color:#e8a33d;color:#f0c98a}
+  .copy.done{border-color:#5f9e6a;color:#8fc39a}
+
+  .note{margin:8px 0 0;font-size:11.8px;line-height:1.72;color:#b7ad9a;text-align:left}
+  .note b{color:#e0d5c0;font-weight:600}
+
+  .btns{margin-top:10px;display:flex;gap:10px;justify-content:center}
+  button{background:#241f18;border:1px solid #3a3227;color:#d9cfba;border-radius:7px;
+    padding:6px 15px;font-size:12.5px;cursor:pointer;font-family:inherit}
+  button:hover{border-color:#e8a33d;color:#f0c98a}
+  button.primary{background:#e8a33d;border-color:#e8a33d;color:#1a150e;font-weight:600}
+  button.primary:hover{background:#f0b455;color:#1a150e}
+
+  footer{margin-top:8px;padding-top:8px;border-top:1px solid #241f18;color:#6f665a;font-size:11px;line-height:1.85}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <svg class="mark" viewBox="0 0 120 120" fill="none" stroke="#e8a33d" stroke-width="3" stroke-linejoin="round">
+    <path d="M40 20h40l-4.6 21C86 49.5 91 59 91 70.5 91 90 75 104 60 104S29 90 29 70.5C29 59 34 49.5 44.6 41L40 20z" opacity=".95"/>
+    <path d="M31.5 72c16-9 41-9 57 0" stroke-width="2.6" stroke-linecap="round"/>
+    <circle cx="48" cy="56" r="3" fill="#e8a33d" stroke="none" opacity=".85"/>
+    <circle cx="61" cy="62" r="3" fill="#e8a33d" stroke="none" opacity=".65"/>
+    <circle cx="70" cy="53" r="2.4" fill="#e8a33d" stroke="none" opacity=".75"/>
+    <path d="M60 111v6" stroke-width="2.4" stroke-linecap="round" opacity=".5"/>
+  </svg>
+
+  <h1>风月酿研所</h1>
+  <p class="tagline">精酿配方设计与酿造记录 · 本地优先</p>
+  <p class="ver" id="ver">v1.2.0</p>
+
+  <div class="card">
+    <h2>特点与优点</h2>
+    <ul class="feat">
+      <li><b>家底厚</b>　277 条原料、105 个 BJCP 风格、50 条经典配方；逐条标注参数出处与置信度，没有的字段宁可留空，也不编假数字。</li>
+      <li><b>算得明白</b>　内置酿造计算内核，改一个数，糖度、酒精度、苦度、色度与原料用量同屏联动；公式可展开，常量可自行校准。</li>
+      <li class="is-key"><b>分享是这套软件的重头</b>　配方、批次、酿造日、酒标、公式，乃至自己勾选的组合包，都能压成一串分享码——复制即传，不依赖账号与网络，导入即用。</li>
+      <li class="is-key"><b>不止一串码</b>　配方卡可导长图、酒标可导图、比对可出报告、数据可整体备份成 JSON。</li>
+      <li><b>数据在你自己手里</b>　全程离线，不联网、不上传、无账号；配方只存本机，卸载重装也不丢。</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>关于作者</h2>
+    <div class="author">
+      <div class="avatar">JZ</div>
+      <div class="who">
+        <div class="name">Jun Z</div>
+        <div class="role">一个人写、一个人试、一个人喝</div>
+      </div>
+    </div>
+    <div class="contacts">
+      <div class="cline"><span class="ck">微信</span><span class="cv">Sherlock_zhangj</span><button class="copy" data-copy="Sherlock_zhangj" type="button">复制</button></div>
+      <div class="cline"><span class="ck">QQ</span><span class="cv">1414801987</span><button class="copy" data-copy="1414801987" type="button">复制</button></div>
+      <div class="cline"><span class="ck">QQ 群</span><span class="cv">766808715<span class="cnote">风月酿研所交流群</span></span><button class="copy" data-copy="766808715" type="button">复制</button></div>
+    </div>
+    <p class="note">
+      用着别扭、想加功能、发现哪里算错了，都欢迎找我——<b>顺手把配方分享码发来</b>，我打开就能看到你的原始参数，比对着截图猜快得多。
+    </p>
+  </div>
+
+  <div class="btns">
+    <button class="primary" id="close">好</button>
+    <button id="help">使用说明</button>
+  </div>
+
+  <footer>
+    风月酿研所 · 仅供个人酿造学习与配方记录使用，酿造与饮用请遵守当地法律法规。<br>
+    <span id="runtime">—</span>　·　数据目录：见「使用说明」（F1）
+  </footer>
+</div>
+<script>
+  (function () {
+    function fmtPath(p) {
+      p = String(p || '');
+      if (/^[A-Za-z]:/.test(p)) p = p.replace(/\//g, '\\').replace(/\\{2,}/g, '\\');
+      return p;
+    }
+    var q = new URLSearchParams(location.search);
+    var v = q.get('version') || '1.0.0';
+    document.getElementById('ver').textContent = 'v' + v;
+    var bd = q.get('build');
+    if (bd) document.getElementById('ver').textContent = 'v' + v + ' · ' + bd;
+    var rt = [];
+    if (q.get('electron')) rt.push('Electron ' + q.get('electron'));
+    if (q.get('chrome')) rt.push('Chromium ' + q.get('chrome'));
+    document.getElementById('runtime').textContent = rt.join(' · ') || '—';
+
+    document.getElementById('close').onclick = function () {
+      if (window.fyShell) window.fyShell.closeSelf(); else window.close();
+    };
+    document.getElementById('help').onclick = function () {
+      if (window.fyShell) window.fyShell.openHelp(); else window.close();
+    };
+
+    // 每个「复制」按钮各自带 data-copy，点谁复制谁
+    document.querySelectorAll('.copy[data-copy]').forEach(function (btn) {
+      btn.onclick = function () {
+        var text = btn.getAttribute('data-copy');
+        var done = function () {
+          var old = btn.textContent;
+          btn.textContent = '已复制';
+          btn.classList.add('done');
+          setTimeout(function () { btn.textContent = old; btn.classList.remove('done'); }, 1500);
+        };
+        if (window.fyShell && window.fyShell.copy) {
+          window.fyShell.copy(text);
+          done();
+        } else if (navigator.clipboard) {
+          navigator.clipboard.writeText(text).then(done).catch(function () {});
+        }
+      };
+    });
+  })();
+</script>
+</body>
+</html>

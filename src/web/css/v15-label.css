@@ -1,0 +1,402 @@
+/* ============================================================================
+ * 风月酿研所 — css/v15-label.css
+ * ----------------------------------------------------------------------------
+ * 职责：酒标编辑器 v2 的样式（v1.5 需求 3）——自由布局画布、元素手柄、
+ *       图片裁剪/拉伸控件、RGB 取色。
+ *
+ * 为什么单开一个文件：理由同 v15-fields.css。酒标这一块要新增的元素多
+ * （画布上浮动的选中框、四角缩放手柄、取色面板），塞进 style.css 会淹没原有结构。
+ *
+ * 约定：
+ *   · 只新增 .lbl-* 前缀的类与 .lbl-layout--v2 这个修饰类，**不改** style.css
+ *     里任何既有选择器（那份文件此刻有别的写者在动）。
+ *   · 不用 backdrop-filter；CSS 的 box-shadow 不受 canvas shadowBlur 那条
+ *     性能约束限制，但这里也只在画布外框用一处（v1.2 就有）。
+ *   · 打印：屏幕上的选中框/手柄/参考线/侧栏都必须消失。55 的打印规则会
+ *     隐藏 .lbl-controls，这里补上"覆盖层 + 分隔条"，并让画布回到
+ *     "只受 560px 高度限制"的老几何（560px = 148.2mm，这是验收过的尺寸）。
+ * ==========================================================================*/
+
+/* ---------------------------------------------------------------- 布局 */
+/* 预览在左、侧栏在右、中间一根可拖的分隔条。
+   列宽用 minmax(0,1fr) + auto + auto：侧栏宽度由 39b 的 resizer 直接写到
+   style.width（px），所以它所在的列必须 auto 才会跟着变。 */
+.lbl-layout--v2 {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  column-gap: 0;
+  align-items: start;
+}
+
+.lbl-side {
+  /* 显式给宽度，和 resizer 的 def:260 对齐。
+     不给的话，grid 的 auto 列会按内容的 max-content 撑开（实测 400+px），
+     resizer 首次 attach 时量到的就是这个宽度 —— "默认 260" 就成了一句空话。 */
+  width: 260px;
+  margin-left: 12px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 侧栏内容不设内部滚动：页面本身已经能滚，再套一层滚动条会让
+   "滚轮调字号"和"滚侧栏"抢手势——用户分不清滚的是哪一个。 */
+.lbl-side__body { min-width: 0; }
+
+/* 面板里大量用 [hidden] 切换子块，而其中几块是 .field（display:flex）。
+   作者样式会盖掉 UA 的 [hidden]{display:none}，于是"隐藏"的输入框还占着位置——
+   这条必须留着，而且必须 !important。 */
+.lbl-side [hidden] { display: none !important; }
+
+.lbl-layout--v2 .lbl-resizer {
+  align-self: stretch;
+  min-height: 360px;
+  margin: 0 2px;
+}
+
+/* 分组标题：侧栏里的"文字 / 背景"两块 */
+.lbl-sec {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.lbl-sec__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tx-2);
+  letter-spacing: .02em;
+}
+.lbl-sec__head .spacer { flex: 1 1 auto; }
+
+/* ------------------------------------------------------------ 预览画布 */
+/* 尺寸由 JS 算（fitCanvas）：覆盖层必须和画布是**同一块矩形**，
+   两边各自算尺寸迟早差 1px，手柄就会浮在框外。 */
+.lbl-canvas-wrap {
+  position: relative;
+  display: block;
+  line-height: 0;
+  max-width: 100%;
+}
+.lbl-stage .lbl-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  border-radius: 2px;
+  box-shadow: var(--sh-2);
+}
+.lbl-canvas:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+
+.lbl-overlay {
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+  user-select: none;
+}
+
+/* 选中框：1px 实线 + 内侧一圈白，压在深色底图上也看得见 */
+.lbl-sel {
+  position: absolute;
+  border: 1px solid var(--amber);
+  box-shadow: inset 0 0 0 1px rgba(255, 253, 248, .55);
+  cursor: move;
+}
+.lbl-sel--rule { cursor: ns-resize; }
+
+.lbl-h {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  margin: -6px 0 0 -6px;
+  background: var(--bg-2);
+  border: 1.5px solid var(--amber);
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+.lbl-h--nw { left: 0; top: 0; cursor: nwse-resize; }
+.lbl-h--ne { left: 100%; top: 0; cursor: nesw-resize; }
+.lbl-h--sw { left: 0; top: 100%; cursor: nesw-resize; }
+.lbl-h--se { left: 100%; top: 100%; cursor: nwse-resize; }
+
+/* 对齐参考线：画布正中线。默认 display:none，吸附命中时才 is-on */
+.lbl-guide {
+  position: absolute;
+  background: var(--amber);
+  opacity: .9;
+  pointer-events: none;
+  display: none;
+}
+.lbl-guide.is-on { display: block; }
+.lbl-guide--v { left: 50%; top: 0; bottom: 0; width: 1px; margin-left: -.5px; }
+.lbl-guide--h { top: 50%; left: 0; right: 0; height: 1px; margin-top: -.5px; }
+
+/* 画布上方工具条：撤销/重做 + 一句操作提示 */
+.lbl-stagebar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 0 0 10px;
+}
+.lbl-stagebar__hint { flex: 1 1 260px; min-width: 0; }
+.lbl-stagebar .btn[disabled] { opacity: .45; cursor: default; }
+
+/* ------------------------------------------------------------ 文字图层 */
+.lbl-layers {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.lbl-layer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  color: var(--tx-1);
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.lbl-layer:hover { background: var(--bg-hover); }
+.lbl-layer.is-on {
+  border-color: var(--amber-line);
+  background: var(--amber-tint);
+  color: var(--amber-soft);
+}
+.lbl-layer__dot {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--line-3);
+}
+.lbl-layer__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lbl-layer__meta {
+  flex: 0 0 auto;
+  font-family: var(--num);
+  font-size: 12px;
+  color: var(--tx-3);
+}
+
+.lbl-elctl[hidden] { display: none; }
+.lbl-elctl {
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg-inset);
+}
+.lbl-elctl .field + .field { margin-top: 8px; }
+.lbl-elctl .lbl-check { margin-top: 8px; }
+
+.lbl-val {
+  float: right;
+  font-family: var(--num);
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--tx-3);
+}
+
+/* ---------------------------------------------------------------- 取色 */
+.lbl-color {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.lbl-color__pick {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 30px;
+  padding: 2px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-xs);
+  background: var(--bg-2);
+  cursor: pointer;
+}
+.lbl-color__pick::-webkit-color-swatch-wrapper { padding: 0; }
+.lbl-color__pick::-webkit-color-swatch { border: 0; border-radius: 2px; }
+.lbl-color__hex {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--num);
+  letter-spacing: .02em;
+  text-transform: lowercase;
+}
+
+.lbl-swrow {
+  display: flex;
+  gap: 5px;
+  margin-top: 7px;
+  flex-wrap: wrap;
+}
+.lbl-sw {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--line-3);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.lbl-sw:hover { outline: 2px solid var(--amber); outline-offset: 1px; }
+
+/* 勾选项：必须是 block 级 flex。写成 inline-flex 会走 shrink-to-fit，
+   容器直接按 max-content 撑开（"保留透明（PNG，长边压到 700px）"这种长句
+   会顶出侧栏右边被裁掉，且永远不换行）。 */
+.lbl-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--tx-2);
+  cursor: pointer;
+}
+.lbl-check input {
+  flex: 0 0 auto;
+  margin: 3px 0 0;
+  accent-color: var(--amber);
+}
+
+/* 滑杆：accent-color 就能拿到主题色，不需要自己画轨道 */
+.lbl-range {
+  width: 100%;
+  accent-color: var(--amber);
+  margin: 0;
+}
+.lbl-range.mt-8 { margin-top: 8px; }
+
+/* ------------------------------------------------------------ 背景切换 */
+.lbl-seg {
+  display: flex;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.lbl-seg button {
+  flex: 1 1 0;
+  padding: 6px 8px;
+  border: 0;
+  background: var(--bg-2);
+  color: var(--tx-2);
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.lbl-seg button + button { border-left: 1px solid var(--line-2); }
+.lbl-seg button:hover { background: var(--bg-hover); }
+.lbl-seg button.is-on {
+  background: var(--amber-tint-2);
+  color: var(--amber-soft);
+  font-weight: 600;
+}
+
+/* file input 藏起来，用「选择图片…」按钮代理：
+   原生控件在各浏览器里长得都不一样，而且没法跟主题对齐。 */
+.lbl-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------ 图片预算 */
+.lbl-budget { margin-top: 10px; }
+.lbl-budget__bar {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--bg-3);
+  overflow: hidden;
+}
+.lbl-budget__bar > span {
+  display: block;
+  height: 100%;
+  background: var(--amber);
+}
+.lbl-budget.is-tight .lbl-budget__bar > span { background: var(--warn); }
+.lbl-budget__txt {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--tx-3);
+}
+.lbl-budget__txt b {
+  font-family: var(--num);
+  font-weight: 600;
+  color: var(--tx-2);
+}
+
+/* 导入失败说明：必须是能照着做的几句话，不是"导入失败"四个字 */
+.lbl-imgmsg {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-2);
+  border-left: 3px solid var(--info);
+  border-radius: var(--r-xs);
+  background: var(--bg-2);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--tx-2);
+}
+.lbl-imgmsg.is-ok { border-left-color: var(--ok); }
+.lbl-imgmsg.is-error { border-left-color: var(--bad); background: var(--bad-tint); }
+.lbl-imgmsg.is-info { border-left-color: var(--info); }
+.lbl-imgmsg b { color: var(--tx-1); }
+.lbl-imgmsg__spin { color: var(--tx-3); }
+
+/* ---------------------------------------------------------------- 响应式 */
+/* style.css 在 1000px 处把 .lbl-layout 压成一列，但那份规则的选择器权重
+   与 .lbl-layout--v2 相同、且更早加载 —— 这里必须再写一遍，否则
+   小屏上还留着三列。1280 以下就切一列：侧栏 260 + 预览 600 已经塞不下。 */
+@media (max-width: 1280px) {
+  .lbl-layout--v2 { grid-template-columns: minmax(0, 1fr); row-gap: 16px; }
+  .lbl-layout--v2 .lbl-resizer { display: none; }
+  .lbl-side { margin-left: 0; width: auto !important; }
+}
+
+/* ---------------------------------------------------------------- 打印 */
+/* 打印出来的是成品：选中框、手柄、参考线、工具条、分隔条一个都不能出现。
+   侧栏由 55 的打印规则隐藏（.lbl-controls），这里补画布这一侧。 */
+@media print {
+  .lbl-overlay,
+  .lbl-guide,
+  .lbl-stagebar,
+  .lbl-resizer { display: none !important; }
+
+  /* 画布回到"只受 148.2mm 高度限制"的老几何：560px @96dpi = 148.17mm，
+     这是验收过的酒标打印尺寸（test-print / print-geometry 都拿它当基准）。
+     屏幕上的 px 尺寸是 JS 按容器算的，打印时容器宽度不一样，必须让位。 */
+  .lbl-canvas-wrap {
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+  }
+  .lbl-stage .lbl-canvas {
+    width: auto !important;
+    height: auto !important;
+    max-width: 186mm !important;
+    max-height: 148.2mm !important;
+    box-shadow: none !important;
+  }
+}

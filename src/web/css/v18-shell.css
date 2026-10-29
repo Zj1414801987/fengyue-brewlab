@@ -1,0 +1,419 @@
+/* ============================================================================
+ * 风月酿研所 — css/v18-shell.css
+ * ----------------------------------------------------------------------------
+ * 职责：① v1.8 功能区复原（回到 v1.4「Aspen Plus 那一版」的形态，只做紧凑化）
+ *       ② 功能区自身的分区与层次
+ *       ③ **区域内部**元素的可辨认边界（按钮 / 输入框 / 指标格 / chip /
+ *          表格行 / 列表项 / 分区标题带）
+ *
+ * 为什么单开一个文件：
+ *   css/style.css 有多个写者同时追加；v17-shell.css 是"横排功能区 + 分享中心"，
+ *   横排这一节本轮整块作废。新规则放这里，加载顺序在 v17-shell.css 之后，
+ *   用同等特异性 + 顺序取胜，不写 !important（那会让"以后改回来"变成考古）。
+ *
+ * ⚠️ 全部规则包在 @media screen 里 —— 与 style.css 4085 行的打印持久约定一致：
+ *   文件末尾新增的全局规则（.btn / .table / .metric …）若不包，会静默顶掉
+ *   @media print 分支里的同名规则，屏幕上一切正常、只有打出来才发现
+ *   （v1.4 踩过一次：卡片可用宽 186mm → 173.3mm → 必然打成 2 页）。
+ *   功能区本身在打印里是 display:none，但同一条约定不做例外。
+ *
+ * ⚠️ 禁用 backdrop-filter：功能区紧邻每帧重绘的画布，真毛玻璃会把帧率打到
+ *   个位数。要"毛玻璃"感只能用**多层半透明叠加 + 内高光 + 外阴影**伪造。
+ *
+ * 三条边界原则（改任何一条规则之前先读这三句）：
+ *   面用色阶分（--n-00…--n-05）：整块表面靠明度差读出来，不靠描边；
+ *   块用边框分（--line-card / --line）：容器与分隔各司其职；
+ *   可点的东西边框要比包着它的框更深（控件 --line-3 3.30:1 > 容器 2.05:1 >
+ *   分隔 1.55:1）。用户的原话是"单个元素和周围底色、和周围元素之间没有明显
+ *   边界"，所以：**凡是可以点、可以填、可以读一个数的格子，都必须有自己的一条边。**
+ * ==========================================================================*/
+
+/* ==========================================================================
+ * 〇、语义块的边框令牌（v1.8 修正：语义越严重，边越实）
+ * --------------------------------------------------------------------------
+ * 问题（用户没提，是自查出来的）：普通卡片的边是 --line-card（n-07，本工程
+ * 口径标 **2.05:1**），而"失败档案"这张卡片的红边用的是 --bad-line（**30%
+ * alpha**，压在白底上只有 **≈1.65:1**）。于是**语义上最需要被看见的那张卡，
+ * 框得最松**，比旁边任何一张普通卡都淡。这是"边界不可辨"的同一个病，
+ * 只是病在心口上。
+ *
+ * 修法不是"用纯红实色"——一页里出现两张失败卡就会变成报警墙。目标是"框得住"：
+ * 沿 --bad / --warn 的 RGB 通道只提 alpha（本工程对叠层的铁律：**通道必须等于
+ * 对应实色，只改 alpha**，否则会出现"框和字不同色"的脏边），把对白底的对比度
+ * 从 1.65 提到 2.5 上下 —— 比普通卡明显一档，又远低于 --bad 实色的 6.75。
+ *
+ * 阶梯（浏览器里实测：边框色按 alpha 叠在 --n-00 白底上，再算 WCAG 对比度。
+ * 同一把尺子量出来的三个数，横向可比；页面注释里 n-07 写的 2.05 是另一套
+ * 取整口径，绝对值略有差异，但"深一档"这个结论不受影响）：
+ *   普通卡 .card   --line-card  1.92:1   ← 中性，无语义
+ *   提醒块         --line-warn  2.52:1   ← 逾期 / 误解 / 历史失败提示
+ *   失败卡         --line-bad   2.67:1   ← 出错，最实的一档
+ *   危险按钮 / 文字  --bad 实色   6.75:1  ← 控件层，比容器更深（本来就该）
+ *
+ * 为什么不把 info / ok 一起提：那两块是"信息"与"顺利"，不承担严重度。
+ * 一起提会让页面上所有框一样深 = 没有层次，又回到"到处是线"的老毛病。
+ * ==========================================================================*/
+:root {
+  --line-bad:  rgba(163, 51, 39, .55);   /* --bad  #a33327 */
+  --line-warn: rgba(147, 65, 10, .53);   /* --warn #93410a */
+}
+
+@media screen {
+
+/* ==========================================================================
+ * 一、功能区尺寸令牌（v1.4 结构 × 紧凑刻度）
+ * --------------------------------------------------------------------------
+ * v1.4 实测：页签条 30 / 面板 92 / 按钮 26 / 按钮区 54。
+ * 用户这次的要求是"调回 aspen plus 那一版，只是布局适当紧凑一点"，
+ * 所以结构一比一复原、数字整体收一档：
+ *
+ *                v1.4           v1.8（本轮）
+ *   面板高        92 / 96 / 84   78 / 80 / 78
+ *   按钮高        26 / 28 / 24   24（三档统一）
+ *   按钮区高      54 / 58 / 50   50（= 24×2 + 2 行距，正好两行）
+ *   分区名        12.5px         11px（标签不是正文，与 v1.7 横排同一档）
+ *   图标          13px           13px（v1.4 原值，不要再压）
+ *
+ * 78 是怎么算出来的（不是拍脑袋）：
+ *   分区内容 = 1（上内衬）+ 50（两行按钮）+ 3（与分区名的间距）
+ *            + 13.2（11px × 行高 1.2）+ 0 = 67.2
+ *   面板内边距 3+3 = 6 → 73.2，面板 78 留 4.8 余量。
+ *   这就是**下限**：再小第二行按钮会被裁。js/40 的拖拽条 min 与双击复位
+ *   读的就是这两个数（78 / 1440 档 80），改这里必须同步改那边。
+ *
+ * 为什么 1440 档给 80：那一档按钮字号是 13.4px（全局唯一为 2K 屏放大的一档），
+ * 两行按钮 + 分区名的行盒都比 1080 档高约 2px。
+ * ==========================================================================*/
+html[data-res="1080"],
+html[data-res="1440"],
+html[data-res="720"] {
+  --ribbon-btn-h: 24px;
+  --ribbon-rows-h: 50px;
+}
+html[data-res="1080"] { --ribbon-panel-h: 78px; }
+html[data-res="1440"] { --ribbon-panel-h: 80px; }
+html[data-res="720"]  { --ribbon-panel-h: 78px; }
+
+/* ==========================================================================
+ * 二、功能区结构：按钮在上、分区名在下（复原 v1.4）
+ * --------------------------------------------------------------------------
+ * 为什么弃用 v1.7 的横排（按钮一行、分区名在左侧）：
+ *   横排把面板压到 60px 是对的，但它把"分区名"变成了行内的一小段字，
+ *   于是 8 个页签看起来是同一条长按钮带，分区之间只剩一道 1px 竖线；
+ *   用户的原话是"功能区实在太丑了"。v1.4 那一版每个分区是**一列按钮 + 下方
+ *   一个居中的分区名**，分区名的基线全部对齐成一条，读起来是"分组"而不是
+ *   "一排按钮"。这就是 Aspen Plus 的样子，也正是用户点名要回来的东西。
+ *
+ * 面板高度令牌已在上面覆盖，这里只管"排成什么形状"。
+ * ==========================================================================*/
+
+/* 面板：3px 上下内边距（v1.4 是 4，紧凑化后按钮区已经算准，多 1px 就是浪费）。
+   背景在原有一层结构色洗色之上，再叠一道自上而下的白色渐隐 + 内高光，
+   伪造"这块面板比下面的画布略高一点"的错觉（不用 backdrop-filter）。 */
+.ribbon__panels {
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, .62), rgba(255, 255, 255, 0) 64%),
+    linear-gradient(0deg, var(--struct-wash), var(--struct-wash));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .85),
+    inset 0 -1px 0 rgba(29, 38, 55, .06);
+}
+.ribbon__panel {
+  padding: 3px 6px;
+  gap: 0;
+}
+
+/* 一个分区 = 一列按钮 + 下方分区名。
+   ⚠️ 不要给 height:100%：分区高度必须由内容决定，撑满会把分区名顶到面板外。
+   ⚠️ 不要 space-between：只有一个按钮的分区会出现一大段空档，像少画了东西。 */
+.rb-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 3px;
+  min-width: 0;
+  padding: 1px 9px 0;
+  /* 分隔线画在**左**边、且首组不画：等价于"两两之间一条线、首尾没有线"，
+     比在右边画再 :last-child 去掉少一次覆盖（v1.4 是右画 + 去尾）。
+     用 --line-card（2.05:1）而不是 --line（1.55:1）：任务书写的是一条 --line，
+     但本工程自己的三级口径是"分隔线只负责断句、容器边才负责分块"，
+     而**分区之间是分块不是断句**。实拍对比过：1.55:1 在 8 个页签、
+     每屏 5–6 个分区的情况下几乎看不见，正是用户说的"区域内部没有边界"。 */
+  border-left: 1px solid var(--line-card);
+  border-right: 0;
+  /* 分区整体的"很轻的凸起"：顶部一道白色渐隐 + 一条内高光。
+     极淡（0.55 → 0）是刻意的：它只负责让每个分区读成"一块浅浅的板"，
+     一旦加深就会变成 8 个卡片并排，功能区会重新变吵。 */
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 58%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7);
+}
+.rb-group:first-child {
+  border-left: 0;
+  box-shadow: none;
+  background-image: none;
+}
+
+/* 按钮容器：flex **列方向 + 自动换行**（v1.4 的原始写法）。
+   高度固定为 --ribbon-rows-h（50），3 颗按钮于是自动排成 2+1 两列，
+   阅读顺序是"上→下→换列"，与 v1.4 完全一致。
+   align-items 用 stretch（= 默认值，v1.4 没有覆盖它）：同一列里的按钮被拉成
+   **等宽**，分区的右缘是一条直线；写成 flex-start 会变成宽度参差的锯齿，
+   在「分辨率」这种 1080P/1440P/720P 三个长度不同的分区里尤其明显。 */
+.rb-rows {
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: stretch;
+  gap: 2px 4px;
+  height: var(--ribbon-rows-h);
+  min-width: 0;
+}
+
+/* 分区名：按钮下方、居中、单行。
+   11px 小于全站最小字号下限 12.5 —— 它不是正文，是"分组标签"，
+   与 v1.7 横排时的 11.5 同一档；之所以再收 0.5，是因为下方标签
+   在面板 78px 里要和两行按钮抢 13px，12.5 会把分区顶出去。 */
+.rb-group__name {
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: .5px;
+  color: var(--tx-3);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* 按钮：高度由令牌给 24px（v1.4 是 26），圆角 4px。
+   **字号 / 左右内边距 / 图标尺寸一律不写**：style.css 里 v1.4 的三档值
+   （12.8 / 13.4 / 12、0 8px / 0 9px / 0 6px、13 / 14 / 12px 图标）就是
+   "那一版"的原值，复原就该连它们一起复原；本轮不发明任何新字号。
+   这一条只做四件事：把高度接上令牌、加一条常驻边、加一层极轻的外阴影、
+   给 hover/active 一套能读出来的接触态。
+   v1.4 的按钮是"无边框、只在 hover 出底色"，这一轮加**常驻边**的理由：
+   用户投诉的正是"单个功能键和周围底色没有边界"，而功能区是页面上按钮
+   最密的地方，光靠 hover 才出现的边等于没有边。
+   用 --line（1.55:1）而不是 --line-3（3.30:1）：几十颗按钮同时描一条
+   3:1 的边会让功能区变成棋盘格；分区内部的按钮之间靠 2px 行距 + 4px 列距
+   分隔，边只负责"这是个可以点的键"。 */
+.rb-btn {
+  height: var(--ribbon-btn-h);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xs);
+  background: transparent;
+  box-shadow: 0 1px 0 rgba(29, 38, 55, .03);
+  transition: background var(--t) var(--ease), color var(--t) var(--ease),
+              border-color var(--t) var(--ease), box-shadow var(--t) var(--ease);
+}
+.rb-btn:hover {
+  background: var(--bg-2);
+  border-color: var(--line-2);
+  color: var(--tx-1);
+  box-shadow: 0 1px 2px rgba(29, 38, 55, .10);
+}
+.rb-btn:active { transform: translateY(1px); box-shadow: none; }
+/* 当前状态（所在视图 / 选中的分辨率 / 字号 / 侧栏）：实色琥珀边 + 淡琥珀底，
+   这是"你在这里"，比普通按钮重一档是正确的。 */
+.rb-btn.is-on {
+  background: var(--amber-tint-2);
+  border-color: var(--amber-line);
+  color: var(--amber-soft);
+  font-weight: 600;
+}
+.rb-btn.is-on:hover { border-color: var(--amber); }
+/* 失效动作：虚线边已经表达"这是个别扭的东西"，不再叠琥珀 */
+.rb-btn.is-missing { border-style: dashed; border-color: var(--line-2); }
+
+/* Alt 角标（.rb-btn__kbd）：**不写**。v1.4 的 12.5px + 2px 3px 内边距 +
+   1px --line-2 边，在 24px 的按钮里高度是 18.5px，装得下；它本来就有边、
+   本来就带 border-radius，是功能区里少数"一直边界清楚"的东西，不需要改。
+   这一行留作核查结论，别以为漏了。 */
+
+/* 三档的字号与左右内边距**不在这里写**：style.css 里 30 号"分辨率与字号预设"
+   已经有三条 `html[data-res="…"] .rb-btn`（12.8 / 13.4 / 720 档的 12）与
+   三档的 svg 尺寸（13 / 14 / 12），特异性都比这里的 `.rb-btn` 高，
+   写了也会被盖掉。复原 v1.4 就等于沿用它们——本轮**没有新增任何字号**。 */
+html[data-res="720"] .rb-group { padding: 1px 7px 0; }
+
+/* 折叠态：面板高度归零时上下内边距要一起归零，否则会留一条 6px 的真空带 */
+.ribbon.is-collapsed .ribbon__panel { padding-top: 0; padding-bottom: 0; }
+
+/* ==========================================================================
+ * 三、区域内部元素的边界
+ * --------------------------------------------------------------------------
+ * 用户原话："单个功能键或者单个的元素和周围底色、和周围的元素之间没有明显的
+ * 边界……区域内部的元素的颜色要能有个边框或者是明显的区分"。
+ *
+ * 所以下面按**元素的种类**逐条给边，顺序与用户的抱怨一致：
+ *   1 按钮  2 输入框/下拉/数字框  3 实时指标格  4 chip/tag/badge
+ *   5 表格行  6 列表项  7 分区标题带
+ * 每一条都只做两件事：给一条**能被看见的边**，给一个**能被看见的接触态**。
+ * 不改字号、不改主题色、不改任何间距令牌（那三样已经定稿）。
+ * ==========================================================================*/
+
+/* ---- 1 按钮 --------------------------------------------------------------
+   .btn 的基类原来是 `border: 1px solid transparent`，于是所有没挂
+   -ghost / -danger 的按钮（顶栏、卡片脚、空态里很多）是"一块没有边的字"。
+   现在基类给 --line-3（控件档 3.30:1），比包着它的卡片框（2.05:1）更深一档，
+   符合"可点的东西边框要更深"。
+   -primary 保持实色（它自己有一条 amber-soft 边 + 内高光）；
+   -quiet / -link 是**文字按钮**（"单步 67°C""查看全部"），给框会让它们
+   读成第二类主按钮，所以显式退回透明边。 */
+.btn {
+  border-color: var(--line-3);
+  box-shadow: 0 1px 0 rgba(29, 38, 55, .04);
+}
+.btn:hover { border-color: var(--tx-3); }
+.btn:active { box-shadow: none; }
+.btn-primary {
+  border-color: var(--amber-soft);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 1px 2px rgba(29, 38, 55, .18);
+}
+.btn-primary:hover { border-color: var(--amber-soft); }
+.btn-danger { border-color: var(--bad-line); }
+.btn-quiet,
+.btn-link {
+  border-color: transparent;
+  box-shadow: none;
+}
+.btn-quiet:hover { border-color: var(--amber-line); }
+
+/* ---- 2 输入框 / 下拉 / 数字框 -------------------------------------------
+   .input / .select / .textarea 本来就是 1px --line-3 + 凹陷底色，够。
+   缺的是**表格里的数字框**：.cell-input 常态是全透明（边框透明、底色透明），
+   于是一整张配方表看起来是"一片白底上漂着数字"。
+   表格里不能给每格画一个完整的方框（20 行 × 5 列会变成 Excel 网格，
+   比"没有边"更吵），所以给它一条**常驻的下划线**（--line-2）：
+   读得出"这里能填"，但不切割表格的行节奏。hover / focus 时才升级成完整框。 */
+.cell-input {
+  border-color: transparent transparent var(--line-2) transparent;
+  border-radius: var(--r-xs) var(--r-xs) 0 0;
+}
+.cell-input:hover { border-color: var(--line-2); border-bottom-color: var(--line-3); }
+.cell-input:focus { border-color: var(--amber); }
+
+/* ---- 3 实时指标格（右侧面板 OG / FG / ABV / IBU / SRM / BU:GU / 感知苦度）---
+   这是"元素之间没有边界"最典型的地方：原来 .metrics 是一个 1px 间隙的 grid，
+   底色和间隙同为 --line，7 个格子挤成**一整块 397px 高的白板**，
+   只有 1px 的发丝线在分隔，扫一眼读不出"这是 7 个数"。
+   现在：每格独立边框 + 圆角 + 6px 间隙（读作 7 块小板），底色下一档。
+   ⚠️ 关于"底色比卡片底浅一档"：卡片已经是全站最亮的 --n-00（纯白），
+      没有更浅的一档；白卡上唯一能让格子"浮出来或陷进去"的方向是下沉一档，
+      所以取 --n-01。它比卡片暗 1.06:1，配合 --line-card 的边，
+      格子的四边都能被读出来。 */
+.metrics {
+  gap: 6px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+.metric {
+  background: var(--n-01);
+  border: 1px solid var(--line-card);
+  border-radius: var(--r-sm);
+  padding: 9px 11px 8px;
+  /* 内高光：让每格读成"微微凸起的小板"，而不是"挖出来的洞" */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9);
+  transition: border-color var(--t) var(--ease), background var(--t) var(--ease);
+}
+.metric:hover { border-color: var(--line-3); background: var(--n-00); }
+
+/* ---- 4 chip / tag / badge ------------------------------------------------
+   三者都**已经有**一条边了（.tag/.chip 是 --line-2，.badge 各语义色 34%），
+   问题是 --line-2 在 --bg-2 白底上只有 2.05:1 —— 刚好在"看得见"的门槛以下。
+   chip 与 tag 是可以点/可以筛的，按"可点的东西更深"提到 --line-3；
+   badge 是纯读数不点，保持 2.05:1 的容器档，只把透明兜底补上。
+   语义色（ok / warn / bad / amber / info）本来就带自己的 30–34% 描边，不动。 */
+.chip,
+.tag { border-color: var(--line-3); }
+.chip:hover { border-color: var(--tx-3); }
+.badge { border-color: var(--line-card); }
+.badge--a { border-color: var(--ok-line); }
+.badge--b { border-color: var(--info-line); }
+.badge--c { border-color: var(--warn-line); }
+.badge--neutral { border-color: var(--line-3); }
+.badge--amber { border-color: var(--amber-line); }
+.badge--bad { border-color: var(--bad-line); }
+
+/* ---- 5 表格 --------------------------------------------------------------
+   行分隔本来就有（tbody td 的 1px --line），真正缺的是**表格自己的外框**：
+   .table-wrap 没有任何边，于是表格的左右两端直接"化"进卡片底色，
+   首行贴近卡片头时更像一段没有起点的文字。
+   加 1px --line-card 的外框 + 6px 圆角（视觉上把表格收成一块板）；
+   行分隔保持 --line 不变（1.55:1，只断句不分块），不做斑马纹 ——
+   斑马纹会和"选中行 / 展开行"的底色打架，分析页的对比表就是受害者。
+   表头底线原本是 --struct-line（结构色 32%），读作"表头与数据的分界"，保留。 */
+.table-wrap {
+  border: 1px solid var(--line-card);
+  border-radius: var(--r-sm);
+}
+.table thead th:first-child { border-top-left-radius: var(--r-sm); }
+.table thead th:last-child { border-top-right-radius: var(--r-sm); }
+/* 表头与表体之间补一条**实线**：有些表 th 的下边界被 sticky 的阴影吃掉，
+   滚动时表头会与第一行黏在一起（--struct-line 是半透明，压在浅底上偏淡）。 */
+.table thead th { border-bottom: 1px solid var(--struct-line); }
+
+/* ---- 6 列表项（左面板 .lp-item、批次列表等）-----------------------------
+   .lp-item 常态没有边、hover 换成 --bg-2 —— 而它所在的 .lp-sec 底色也是
+   --bg-2（纯白），于是 **hover 等于什么都没发生**。当前项 is-on 只有一层
+   琥珀底，没有边，在 8 个分区堆叠时读不出"选中的是哪一行"。
+   现在：hover 给一条 --line 边（同时把底色换成 --bg-1，保证在白底上看得见），
+   当前项给一条实心琥珀边。 */
+.lp-item {
+  border: 1px solid transparent;
+  transition: background var(--t) var(--ease), color var(--t) var(--ease),
+              border-color var(--t) var(--ease);
+}
+.lp-item:hover {
+  background: var(--bg-1);
+  border-color: var(--line);
+  color: var(--tx-1);
+}
+.lp-item.is-on {
+  background: var(--amber-tint);
+  border-color: var(--amber-line);
+  color: var(--amber-soft);
+}
+.lp-item.is-on:hover { border-color: var(--amber); }
+
+/* ---- 8 语义块：语义越严重，边越实（令牌见文件头「〇」）-------------------
+   这一类不是"元素"而是"块的语义"。它们原来全部用 30–34% alpha 的语义线
+   （--bad-line / --warn-line ≈1.5:1），比普通卡的 2.05:1 还淡 ——
+   于是**越需要被看见的块，框得越松**。
+   现在按梯队走 --line-bad(≈2.7) / --line-warn(≈2.5)，并且：
+   · 失败卡保留左侧 3px 色条，但改成 **--bad 实色**：那条竖条是它的身份标记，
+     容器层的 1px 边只需要"框得住"，标记本身可以实；
+   · 提醒块（.term-myth / .bd-alert / .fail-hint）本来就是"暖色 1px + 左侧
+     3px 实线"的老结构，只把那 1px 提一档，不动 3px 竖条；
+   · info / ok 两块**不动**：它们不承担严重度，一起提会让所有框一样深，
+     等于又回到"到处是线、处处不分"。 */
+.card--fail {
+  border-color: var(--line-bad);
+  border-left-color: var(--bad);
+}
+.card--fail .card__head { border-bottom-color: var(--line-bad); }
+
+.alert--error { border-color: var(--line-bad);  border-left-color: var(--bad); }
+.alert--warn  { border-color: var(--line-warn); border-left-color: var(--warn); }
+
+/* ⚠️ 这三个块（误解 / 逾期提醒 / 历史失败提示）原本写的是
+   `border: 1px solid var(--warn-line); border-left: 3px solid var(--warn)` ——
+   左侧 3px 是**实色**。用 `border-color` 一条会把那根实线也改成半透明，
+   等于把它们唯一的"重量"抽掉（实测过：左边从 6.9:1 掉到 2.5:1）。
+   所以只覆盖上/右/下三条边，左边一根手指都不碰。 */
+.term-myth,
+.bd-alert,
+.fail-hint {
+  border-top-color: var(--line-warn);
+  border-right-color: var(--line-warn);
+  border-bottom-color: var(--line-warn);
+}
+
+/* ---- 7 分区标题带：核查过，**不需要改** --------------------------------
+   .card__head 已经有 `border-bottom: 1px solid var(--line)`、.card__foot 有
+   `border-top: 1px solid var(--line)`，.card__hint 有一条虚线 --line。
+   任务里写的是"保留 --line 分隔线"，而这三条正在用 --line，所以本轮
+   **一条都没动**：卡内是"断句"不是"分块"，把它升到 --line-card 会让每张卡
+   看起来被切成三块，比没有边更吵。
+   这一节留在这里是为了留下核查结论——下一个改这片的人不必再去翻一遍。 */
+
+} /* @media screen */

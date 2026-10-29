@@ -1,0 +1,68 @@
+/* ============================================================================
+ * 风月酿研所 — v17 原料下拉：脱离滚动容器的浮层
+ * ----------------------------------------------------------------------------
+ * 为什么必须单独一个文件：
+ *   `.combo__list` 原来长在 `.combo` 里面，而 `.combo` 落在 `.table-wrap` 里。
+ *   `.table-wrap` 为了横向滚动写了 `overflow-x:auto`；按 CSS 规范，另一轴写
+ *   `visible` 会被**计算成 auto**，于是 .table-wrap 成了一个滚动容器，浮层被它裁。
+ *   实测：面板自然高 280px，视口内只看得见 44–191px，位置越靠下越惨。
+ *
+ * 结论：浮层必须 body 挂载 + position:fixed（项目里 .term-pop 早在
+ *   css/style.css:2030 就定过这条规矩，下拉没遵守）。坐标由 JS 在展开时算。
+ *
+ * 本文件只加新类，不改 css/style.css 里任何既有规则。
+ * ========================================================================== */
+
+.combo__list--fixed {
+  position: fixed;
+  z-index: 9000;
+  display: block;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* 基础类 .combo__list 有 `min-width: 100%`——它是相对 .combo 的宽度算的。
+     浮层的包含块变成了视口，100% 会被解析成整个视口宽，JS 算的
+     "至少 300px、左右不越界" 全部失效（实测面板右边跑到 1945px，而视口 1680）。
+     这里必须归零，宽度由 JS 按按钮宽度写 inline。 */
+  min-width: 0;
+  background: var(--bg-1, #fff);
+  /* 边框色用 --line-2，不是 --bd-1 —— 后者是我写这份文件时凭印象造的，
+     本工程的边框令牌只有 --line-2 / --line-3 / --line-card 三个。
+     写错令牌不会报错，只会静默 fallback 到硬编码色，然后永远不跟主题走。 */
+  border: 1px solid var(--line-2, #d8dce0);
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(18, 24, 28, .16), 0 2px 6px rgba(18, 24, 28, .08);
+  /* 展开动画只做透明度与位移，不做 scale —— 缩放会让列表项在悬停时抖 */
+  animation: combo-fixed-in .12s ease-out;
+}
+
+@keyframes combo-fixed-in {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* 向上翻转时，进场方向也要反过来 */
+.combo__list--fixed.is-up { animation-name: combo-fixed-in-up; }
+
+@keyframes combo-fixed-in-up {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.combo__list--fixed .combo__opt {
+  /* 浮层里没有 .combo 包裹，选中态靠 aria 自己判断 */
+  cursor: pointer;
+}
+
+.combo__list--fixed .combo__opt[aria-selected="true"] {
+  background: var(--struct-tint, rgba(26, 95, 102, .10));
+  color: var(--struct, #1a5f66);
+  font-weight: 600;
+}
+
+.combo__list--fixed .combo__empty,
+.combo__list--fixed .combo__empty--dyn {
+  padding: 14px 10px;
+  text-align: center;
+  color: var(--tx-3, #6b7479);
+  font-size: 12.5px;
+}

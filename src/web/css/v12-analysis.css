@@ -1,0 +1,529 @@
+/* ============================================================================
+ * 风月酿研所 — css/v12-analysis.css
+ * ----------------------------------------------------------------------------
+ * v1.2 分析视图专用样式（Alt+9：年度统计 / 配方谱系 / 多批次对比）。
+ * 由 index.html 单独 <link> 引入，**不要合并进 style.css**——
+ * v1.2 有两条并行开发线同时在改那份文件，合并必冲突。
+ *
+ * 约束（与 style.css 同一套）：
+ *   · 只读 :root 里已有的令牌（--bg-* / --line* / --amber* / --tx-* / --r* / --mono）
+ *   · 不用 backdrop-filter、不用 box-shadow 叠动效
+ *   · 字号不小于 11px
+ *   · 不复用 .metric（tools/cdp.js 断言批次页 .metric 恰好 8 个），
+ *     本文档用 .an-stat / .an-panel / .an-row 这套新类名
+ *
+ * 布局：页签条直接复用 style.css 的 .tabs / .tab（44 号原料库已在用）；
+ *       数字卡用 Grid 四列，图表区用 Grid 两列 + 一项跨列。
+ *       全部靠 CSS 重排，不靠 JS 量尺寸。
+ * ==========================================================================*/
+
+/* ==================================================================== 统计 */
+.an-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.an-toolbar__label {
+  font-size: 13.5px;
+  color: var(--tx-3);
+  letter-spacing: .4px;
+}
+
+.an-stats {
+  margin-bottom: 14px;
+}
+
+.an-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  /* v1.6：四块统计格是分析页最"数据面板"的表面，压一层结构色洗色。
+     与 .table thead th 同一个手法（--struct-wash 叠在 --bg-inset 上），
+     保证"冷"的表达在全站只有一种做法。 */
+  background-color: var(--bg-inset);
+  background-image: linear-gradient(0deg, var(--struct-wash), var(--struct-wash));
+  min-width: 0;
+}
+
+.an-stat__k {
+  font-size: 12.5px;
+  letter-spacing: .6px;
+  color: var(--tx-3);
+}
+
+.an-stat__v {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 20.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  /* v1.6：年度统计的四个大数从琥珀改为结构色。
+     理由：这些是"归档数据"（去年酿了多少批、花了多少钱），不是"当前这一锅的关键值"。
+     配方页 .metric 里的 OG/ABV/IBU 才是"关键数值"，那里保留琥珀。
+     这样一屏之内琥珀最多只出现在一个语义层，不会到处都是。 */
+  color: var(--struct-soft);
+  letter-spacing: -.4px;
+}
+
+.an-stat__unit {
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  color: var(--tx-3);
+  margin-left: 3px;
+}
+
+.an-stat__sub {
+  font-size: 12.5px;
+  color: var(--tx-3);
+  line-height: 1.45;
+}
+
+/* 图表区：两列自适应；月度那条要跨两列（12 个条形并排会挤成一团） */
+.an-charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+  /* 不加这条，同一行里的两块面板会被最高的那块拉齐——
+     花费页签左边是 12 个月度条（318px 高），右边是等高的构成图，
+     两块高度不一样时短的那块底下留一大片空白，看着像加载失败。 */
+  align-items: start;
+}
+
+.an-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg-1);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.an-panel--wide { grid-column: 1 / -1; }
+
+.an-panel__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  /* v1.6：面板头是"数据面板的表头"，下边界交给结构色。
+     面积很小（1px），但四个面板各一条，读者能把分析页和配方页分开——
+     分析页偏冷、配方页偏暖，这正好对应"看数据"和"做配方"两种心态。
+     注意：左侧竖条仍是琥珀（标题母题），不要一起换。 */
+  border-bottom: 1px solid var(--struct-line);
+}
+
+.an-panel__head h3 {
+  /* L3：分析面板标题。字号/字距/行高与竖条刻度全部取 style.css :root 的
+     --fs-l3-panel / --ls-l3 / --bar-l3-*，这一层不要写裸数字。 */
+  font-size: var(--fs-l3-panel);
+  line-height: var(--lh-l3);
+  letter-spacing: var(--ls-l3);
+  color: var(--tx-1);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.an-panel__head h3::before {
+  content: "";
+  width: var(--bar-l3-w);
+  height: var(--bar-l3-h);
+  border-radius: 2px;
+  background: var(--amber);
+  opacity: .85;
+  flex: 0 0 auto;
+}
+
+.an-panel__body { padding: 10px 12px; }
+.an-panel__body--flush { padding: 0; }
+
+/* 画布按容器宽度撑满；高度由 HTML 的 height 属性给定，
+   48 的 setup() 取 getBoundingClientRect，所以这里必须给确定的 CSS 高度。
+   ⚠️ 画布里的颜色由 js/48-ui-charts.js 的常量 C 决定（深色主题色），
+      浅色主题下这一块仍是深图例/浅数据线，需要 JS 那单一并处理。 */
+.an-canvas {
+  display: block;
+  width: 100%;
+  height: 212px;
+}
+.an-panel--wide .an-canvas { height: 318px; }
+
+/* 品鉴榜里的分数用等宽数字，换行时同一列不抖 */
+/* v1.6：品鉴榜分数是"归档数据"里的排序依据，与 .an-stat__v 同属数据面板 → 结构色 */
+.an-score { color: var(--struct-soft); font-weight: 600; }
+
+/* 警告 / 数据说明：比正文小一号，左侧一条细线，不抢图表 */
+.an-notes {
+  margin: 0 0 12px;
+  padding: 8px 12px 8px 22px;
+  border-left: 2px solid var(--line-3);
+  background: var(--bg-inset);
+  border-radius: 0 var(--r-xs) var(--r-xs) 0;
+  font-size: 13.5px;
+  color: var(--tx-2);
+  line-height: 1.6;
+}
+
+.an-notes li { list-style: disc; }
+
+/* 口径脚注：这功能唯一会吵架的地方，字号可以小但不能没有 */
+.an-foot {
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--tx-3);
+}
+
+.an-foot b { color: var(--tx-2); font-weight: 600; }
+
+.an-foot code {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  padding: 0 3px;
+  border-radius: var(--r-xs);
+  background: var(--bg-hover);
+  color: var(--tx-2);
+}
+
+/* ==================================================================== 谱系 */
+.an-treebar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.an-treebar__stat {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--tx-2);
+}
+
+.an-treebar__stat + .an-treebar__stat::before {
+  content: "·";
+  margin-right: 8px;
+  color: var(--tx-3);
+}
+
+/* 提示行：文字前面挂一个内联 svg 图标，因此用 flex 对齐而不是 text-indent */
+.an-note-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--tx-2);
+}
+
+.an-note-line svg { flex: 0 0 auto; margin-top: 2px; color: var(--tx-3); }
+.an-note-line--warn { color: var(--warn); }
+.an-note-line--warn svg { color: var(--warn); }
+
+.an-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--tx-3);
+}
+
+.an-legend__item { display: inline-flex; align-items: center; gap: 5px; }
+
+/* 图例色块与节点边框同源：图例说是灰的，图上就必须是灰的 */
+.an-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid var(--line-3);
+  flex: 0 0 auto;
+}
+
+.an-swatch--recipe { background: var(--bg-3); border-color: var(--line-3); }
+.an-swatch--classic { background: var(--bg-1); border-color: var(--line-2); border-style: dashed; }
+.an-swatch--root { background: transparent; border-style: dotted; }
+/* v1.6：色块用的两档 alpha 已收进 :root（--sw-*），通道与 --bad / --warn / --info 同源。 */
+.an-swatch--missing { background: var(--sw-bad); border-color: var(--sw-bad-line); }
+.an-swatch--blank { background: var(--sw-warn); border-color: var(--sw-warn-line); }
+.an-swatch--stray { background: var(--sw-info); border-color: var(--sw-info-line); }
+.an-swatch--cycle {
+  background: var(--violet-tint);
+  border-color: var(--violet-line);
+  color: var(--tx-2);
+  font-size: 12.5px;
+  line-height: 8px;
+  text-align: center;
+}
+
+/* 树的滚动容器：节点是绝对定位的，滚动必须发生在它外层，
+   这样 SVG 连线与节点在同一个坐标系里一起滚 */
+.an-tree-scroll {
+  overflow: auto;
+  max-height: 520px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg-inset);
+}
+
+.an-tree { position: relative; min-width: 100%; }
+
+.an-tree__lines {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.an-tree__lines path {
+  fill: none;
+  stroke: var(--line-3);
+  stroke-width: 1.4;
+}
+
+/* 节点：宽高与 js/53-ui-lineage.js 的 NODE_W / NODE_H 必须一致 */
+.an-node {
+  position: absolute;
+  display: flex;
+  align-items: stretch;
+  width: 176px;
+  height: 40px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+
+.an-node__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  padding: 3px 8px;
+  text-align: left;
+  border: 0;
+  background: none;
+  color: inherit;
+}
+
+.an-node__body:hover { background: var(--bg-hover); }
+.an-node__body--static { cursor: default; }
+.an-node__body--static:hover { background: none; }
+
+.an-node__name {
+  font-size: 13.5px;
+  line-height: 1.25;
+  color: var(--tx-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.an-node__sub {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.an-node__meta {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.3;
+  color: var(--tx-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.an-node__toggle {
+  flex: 0 0 19px;
+  border-left: 1px solid var(--line);
+  background: var(--bg-3);
+  color: var(--tx-2);
+  font-size: 12.5px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.an-node__toggle:hover { background: var(--bg-hover); color: var(--tx-1); }
+
+/* 角标：三种来源问题的颜色必须不同——它们对应三种不同的处理动作 */
+.an-badge {
+  flex: 0 0 auto;
+  padding: 0 4px;
+  border: 1px solid var(--line-3);
+  border-radius: var(--r-xs);
+  font-size: 12.5px;
+  line-height: 1.5;
+  white-space: nowrap;
+  color: var(--tx-2);
+}
+
+.an-badge.is-missing { color: var(--bad); border-color: var(--bad-line); background: var(--bad-tint-2); }
+.an-badge.is-blank { color: var(--warn); border-color: var(--warn-line); background: var(--warn-tint-2); }
+.an-badge.is-stray { color: var(--info); border-color: var(--info-line); background: var(--info-tint); }
+.an-badge.is-cycle { color: var(--violet); border-color: var(--violet-line); background: var(--violet-tint); }
+.an-badge.is-current { color: var(--amber-soft); border-color: var(--amber-line); background: var(--amber-tint-2); }
+
+/* 节点按 kind 上色：本地配方正常、classic 灰显、root 虚线占位 */
+.an-node--classic { background: var(--bg-1); border-style: dashed; border-color: var(--line-2); }
+.an-node--classic .an-node__name { color: var(--tx-2); }
+.an-node--root { background: transparent; border-style: dotted; }
+.an-node--root .an-node__name { color: var(--tx-2); }
+
+.an-node.is-cycle { border-color: var(--violet-line); }
+.an-node.is-current { border-color: var(--amber); background: var(--amber-tint); }
+.an-node.is-current .an-node__name { color: var(--amber-soft); font-weight: 600; }
+
+/* ============================================================ 多批次对比 */
+.an-picker {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg-1);
+}
+
+.an-picker__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.an-picker__label {
+  font-size: 13.5px;
+  letter-spacing: .4px;
+  color: var(--tx-2);
+}
+
+/* 批次可能有几十个：给个高度上限自己滚，不要让它把图表挤到屏幕外 */
+.an-picker__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 96px;
+  overflow-y: auto;
+}
+
+.an-chip__id {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--tx-3);
+  opacity: .85;
+}
+
+.an-chip__id:empty { display: none; }
+
+.an-chip__n {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--tx-3);
+}
+
+.chip.is-on .an-chip__n,
+.chip.is-on .an-chip__id { color: var(--struct-soft); }
+
+.an-ab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 13px;
+  color: var(--tx-2);
+}
+
+.an-ab-legend__item { display: inline-flex; align-items: center; gap: 6px; }
+.an-ab-legend__item b { font-weight: 600; color: var(--tx-1); }
+
+.an-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.an-panel__body--tight { padding: 6px 12px 10px; }
+
+/* 两行表头（批次名 + 设计/实测）不能被 style.css 的 sticky 顶到同一行上去 */
+.an-ab-table thead th { position: static; }
+
+.an-ab-table .an-ab-ind {
+  color: var(--tx-2);
+  white-space: nowrap;
+  min-width: 96px;
+}
+
+.an-ab-table .an-ab-batch {
+  text-align: center;
+  border-left: 1px solid var(--line);
+}
+
+/* 表头上的批次标识：名字一行、批次号+日期一行。
+   同配方两锅时名字完全一样，没有第二行就分不出列。 */
+.an-ab-table .an-ab-batch__name { display: block; font-weight: 600; }
+
+.an-ab-table .an-ab-batch__id {
+  display: block;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--tx-3);
+  letter-spacing: .02em;
+}
+
+.an-ab-table .an-ab-batch__id:empty { display: none; }
+
+.an-ab-table tbody td.an-ab-ind { color: var(--tx-2); }
+
+/* 每批两列之间画一条淡分隔线，避免眼睛把"上一批的实测"读成"下一批的设计"。
+   列序是 1=指标，2/3=第一批的设计/实测，4/5=第二批…… 所以分隔线落在 3/5/7/9（2n+3） */
+.an-ab-table tbody td:nth-child(2n+3) { border-right: 1px solid var(--line); }
+
+.an-delta {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 3px;
+  border-radius: var(--r-xs);
+  font-size: 12.5px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.an-delta.is-good { color: var(--ok); background: var(--ok-tint-2); }
+.an-delta.is-bad { color: var(--bad); background: var(--bad-tint-2); }
+.an-delta.is-flat { color: var(--tx-3); }
+.an-delta.is-neutral { color: var(--tx-2); background: var(--bg-3); }
+
+/* ============================================================ 窄屏（<720） */
+/* 980 是 style.css 里已有的断点，沿用同一个数字，不要自造一套。
+   1280（720P 预设）扣掉侧栏 302 和两栏内边距后内容区约 900px，
+   此时两列各 440 左右，12 个月度条还能看；再窄下去标签会互相压。 */
+@media (max-width: 980px) {
+  .an-charts { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 720px) {
+  .an-charts { grid-template-columns: minmax(0, 1fr); }
+  .an-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

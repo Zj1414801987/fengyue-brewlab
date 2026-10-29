@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>使用说明 · 风月酿研所</title>
+<style>
+  :root{
+    --bg:#12100d; --panel:#1b1813; --line:#332c22; --ink:#e9e2d4;
+    --muted:#9a9082; --muted2:#9a9082; --amber:#e8a33d; --green:#5f9e6a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:14px/1.75 "Microsoft YaHei","PingFang SC","Segoe UI",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:820px;margin:0 auto;padding:34px 30px 56px}
+  header{display:flex;align-items:center;gap:14px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+  .mark{width:44px;height:44px;flex:0 0 auto}
+  h1{font-size:20px;margin:0;letter-spacing:.5px}
+  .sub{color:var(--muted2);font-size:12px;margin-top:3px}
+  h2{font-size:15px;margin:30px 0 10px;color:var(--amber);letter-spacing:.5px}
+  h2::before{content:"";display:inline-block;width:3px;height:13px;background:var(--amber);
+    margin-right:8px;vertical-align:-2px;border-radius:2px}
+  p{margin:8px 0;color:#d6cdbc}
+  ol,ul{margin:8px 0;padding-left:22px;color:#d6cdbc}
+  li{margin:5px 0}
+  code,kbd{background:#241f18;border:1px solid #3a3227;border-radius:4px;
+    padding:1px 6px;font-family:Consolas,monospace;font-size:12.5px;color:#f0c98a}
+  kbd{box-shadow:0 1px 0 #0b0a08}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+  th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{color:var(--muted2);font-weight:600;font-size:12px;letter-spacing:.4px}
+  td:first-child{width:190px;color:#e6dcc8}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:12px 0}
+  .note{border-left:3px solid var(--amber);background:#1d1913;padding:10px 14px;border-radius:0 8px 8px 0;
+    color:#cfc4ae;font-size:13px;margin:12px 0}
+  .path{word-break:break-all;color:#b9ad96;font-size:12.5px}
+  footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);color:#6f665a;font-size:12px}
+  a{color:var(--amber)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg class="mark" viewBox="0 0 32 32" fill="none" stroke="#e8a33d" stroke-width="1.6" stroke-linejoin="round">
+      <path d="M11 5.5h10l-1.2 5.3c2.4 1.7 3.7 4.1 3.7 7 0 5-3.4 8.6-7.5 8.6S8.5 22.8 8.5 17.8c0-2.9 1.3-5.3 3.7-7L11 5.5z"/>
+      <path d="M11.6 18.2c2.6-1.7 6.2-1.7 8.8 0" stroke-linecap="round"/>
+      <circle cx="13.4" cy="14.2" r=".9" fill="#e8a33d" stroke="none"/>
+      <circle cx="16.6" cy="16.4" r=".9" fill="#e8a33d" stroke="none"/>
+      <circle cx="18.6" cy="13.2" r=".9" fill="#e8a33d" stroke="none"/>
+    </svg>
+    <div>
+      <h1>风月酿研所 · 使用说明</h1>
+      <div class="sub" id="verline">Windows 桌面版</div>
+    </div>
+  </header>
+
+  <h2>第一次用，按这个顺序走</h2>
+  <ol>
+    <li><b>新建配方</b>：点右上角「新建」，或从「经典配方库」挑一款作为起点。</li>
+    <li><b>填参数</b>：配方页左侧填批次量、糖化效率等，右侧「实时指标」会同步算出 OG、ABV、IBU、色度。</li>
+    <li><b>保存</b>：点「保存配方」写入本机。下次打开还在，不会上传到任何服务器。</li>
+  </ol>
+  <div class="note">这个软件是<b>完全离线</b>的：所有计算和保存都在你自己的电脑上完成，不联网也能用。</div>
+
+  <h2>常用快捷键</h2>
+  <table>
+    <tr><th>按键</th><th>作用</th></tr>
+    <tr><td><kbd>Alt</kbd> + <kbd>1</kbd>…<kbd>0</kbd></td><td>在配方、工艺、批次、报表等视图之间直接跳转</td></tr>
+    <tr><td><kbd>Ctrl</kbd> + <kbd>B</kbd></td><td>收起 / 展开左侧面板</td></tr>
+    <tr><td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd></td><td>立即备份一份数据（菜单「文件」里也有）</td></tr>
+    <tr><td><kbd>F1</kbd></td><td>打开这份使用说明</td></tr>
+    <tr><td><kbd>Ctrl</kbd> + <kbd>=</kbd> / <kbd>-</kbd> / <kbd>0</kbd></td><td>放大 / 缩小 / 恢复默认字号</td></tr>
+    <tr><td><kbd>F11</kbd></td><td>全屏</td></tr>
+    <tr><td><kbd>F12</kbd></td><td>开发者工具（排查问题时用）</td></tr>
+  </table>
+
+  <h2>数据存在哪、怎么备份</h2>
+  <p>配方与设置保存在本机用户目录，不在软件安装目录里——所以<b>卸载重装不会丢数据</b>，但也意味着换电脑要自己拷贝。</p>
+  <div class="card">
+    <p style="margin:0 0 6px">数据目录</p>
+    <p class="path" id="datadir">—</p>
+    <p style="margin:14px 0 6px">自动备份目录（每次启动自动留一份，最多 10 份）</p>
+    <p class="path" id="backupdir">—</p>
+  </div>
+  <p>两种备份方式，建议都留着：</p>
+  <ul>
+    <li><b>软件内导出</b>：「设置 → 导出」，得到一份 JSON。恢复时用「设置 → 导入」，按 id 合并，同 id 保留较新的。</li>
+    <li><b>自动备份</b>：菜单「文件 → 立即备份数据」，或直接翻上面的备份目录。适合手滑改坏配方之后回滚查看。</li>
+  </ul>
+
+  <h2>常见问题</h2>
+  <table>
+    <tr><th>现象</th><th>怎么办</th></tr>
+    <tr><td>双击后要等一两秒才出界面</td><td>首次启动要解压程序本体，属正常；之后会快很多。</td></tr>
+    <tr><td>Windows 提示"已保护你的电脑"</td><td>软件未购买数字签名证书，属正常。点「更多信息 → 仍要运行」，或右键属性勾选「解除锁定」。</td></tr>
+    <tr><td>杀毒软件报风险</td><td>打包后的可执行文件偶发误报，加入信任即可。软件不联网、不写系统目录。</td></tr>
+    <tr><td>界面卡在"正在初始化酿造引擎"</td><td>菜单「视图 → 重新加载」；仍不行就关掉重开。数据不会丢。</td></tr>
+    <tr><td>换了台电脑，配方没了</td><td>用「设置 → 导入」选之前导出的 JSON；或把数据目录整个拷过去。</td></tr>
+  </table>
+
+  <h2>版本</h2>
+  <p id="history"><b>v1.3</b> · 「关于」页补充联系方式：微信、QQ（1414801987）与风月酿研所交流群（766808715），均可一键复制。<br><b>v1.2</b> · 「关于」页新增特点与作者信息：软件特色、分享能力说明、作者与联系方式（可一键复制微信号）。<br><b>v1.1</b> · 窗口按屏幕可用区域自适应（小屏笔记本不再顶出屏幕底部）、记住缩放比例、新增「重置窗口位置与缩放」救援入口、品牌统一为风月酿研所、应用改为 asar 打包（启动更快、目录更干净）。<br>v1.0 · 首个 Windows 桌面版：独立窗口、原生菜单、使用说明与关于、单实例、窗口状态记忆、启动自动备份。</p>
+
+  <footer>风月酿研所 · 本地优先的精酿配方与酿造记录工具</footer>
+</div>
+<script>
+  (function () {
+    function fmtPath(p) {
+      p = String(p || '');
+      if (/^[A-Za-z]:/.test(p)) p = p.replace(/\//g, '\\').replace(/\\{2,}/g, '\\');
+      return p;
+    }
+    var q = new URLSearchParams(location.search);
+    var v = q.get('version') || '1.0.0';
+    document.getElementById('verline').textContent = 'Windows 桌面版 v' + v + ' · 按 F1 随时回到这里';
+    if (q.get('dataDir')) document.getElementById('datadir').textContent = fmtPath(q.get('dataDir'));
+    if (q.get('backupDir')) document.getElementById('backupdir').textContent = fmtPath(q.get('backupDir'));
+  })();
+</script>
+</body>
+</html>

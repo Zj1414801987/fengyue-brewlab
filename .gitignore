@@ -1,0 +1,16 @@
+# 依赖与构建产物
+node_modules/
+dist/
+build/out/
+*.asar
+
+# 本地打包与调试产物
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 用户数据（配方、备份、设置）不要进仓库
+*.local.json
+backups/

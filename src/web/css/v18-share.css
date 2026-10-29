@@ -1,0 +1,192 @@
+/* ============================================================================
+ * 风月酿研所 — v18-share.css
+ * ----------------------------------------------------------------------------
+ * v1.8 分享中心：自定义勾选面板（.shb-*）+ 「自定义」胶囊（.sh-type--bundle）。
+ *
+ * 只加新类，不覆盖 style.css / v17-shell.css 里已有的 .sh-* / .share-* ——
+ * 那两个文件里的样式是 11 颗胶囊与生成 / 导入两栏的排版，改它们会连带
+ * 影响已有断言量过的几何（test-share 的 F 段量的是功能区，不是这里，
+ * 但分享框的胶囊换行行为同样不该被顺手改掉）。
+ *
+ * 配色只用令牌：--line / --bg-1 / --bg-hover / --tx-1..3 / --amber*。
+ * 不写死十六进制 —— v1.8 的视觉闸门（test-visual）按绘制面积统计色相，
+ * 硬编码的色值不受主题与令牌体系约束，是那类"改一处、脏一片"的来源。
+ * ==========================================================================*/
+
+/* ---- 「自定义」胶囊：与那 11 颗同形，只加一道虚线边区分"它不是一种对象" ---- */
+.sh-type--bundle {
+  border-color: var(--line-2);
+  border-style: dashed;
+}
+.sh-type--bundle.is-on {
+  border-style: solid;
+}
+
+/* ---- 勾选面板外框 ---- */
+.shb {
+  margin-bottom: 10px;
+  border: 1px solid var(--line-card);
+  border-radius: var(--r);
+  background: var(--bg-1);
+  overflow: hidden;
+}
+.shb[hidden] { display: none; }
+
+/* ---- 顶栏：全选 / 清空 / 实时估算 ---- */
+.shb__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-2);
+}
+.shb__all {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.8px;
+  color: var(--tx-2);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.shb__all input { margin: 0; }
+.shb__est {
+  margin-left: auto;
+  font-size: 12.4px;
+  color: var(--tx-3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.shb__est.is-long { color: var(--warn); }
+.shb__est.is-over { color: var(--bad); font-weight: 600; }
+
+/* ---- 列表：分组标题 + 行 ---- */
+.shb__list {
+  max-height: 190px;
+  overflow-y: scroll;      /* 不用 auto：Chrome 的 overlay 滚动条平时是隐形的，
+                              12 个块只露出 9 行时，用户完全看不出还有东西在下面 */
+  padding: 4px 0 6px;
+  /* 行高收到 19px、分组标题收到 20px：让"原料 / 配方 / 记录"三组一次性露出来，
+     同时不把「生成」挤到弹窗折线以下 —— 主操作看不见是最贵的一种排版错误。 */
+}
+.shb__list::-webkit-scrollbar { width: 8px; }
+.shb__list::-webkit-scrollbar-track { background: transparent; }
+.shb__list::-webkit-scrollbar-thumb {
+  background: var(--line-3);
+  border-radius: 4px;
+  border: 2px solid var(--bg-1);
+}
+.shb__list::-webkit-scrollbar-thumb:hover { background: var(--tx-3); }
+.shb__group {
+  padding: 4px 10px 2px;
+  font-size: 11.4px;
+  letter-spacing: .04em;
+  color: var(--tx-3);
+}
+.shb__row {
+  display: grid;
+  grid-template-columns: 18px minmax(72px, max-content) 62px 84px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 2px 10px;
+  line-height: 19px;
+  cursor: pointer;
+  font-size: 12.8px;
+  color: var(--tx-2);
+  border-left: 2px solid transparent;
+}
+.shb__row:hover { background: var(--bg-hover); }
+.shb__row.is-on {
+  color: var(--tx-1);
+  border-left-color: var(--amber);
+  background: var(--amber-tint);
+}
+.shb__row.is-off {
+  cursor: not-allowed;
+  opacity: .55;
+}
+.shb__row input { margin: 0; }
+.shb__name { font-weight: 500; }
+.shb__n {
+  color: var(--tx-3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.shb__c {
+  color: var(--tx-3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+}
+.shb__row.is-on .shb__c { color: var(--amber-soft); }
+.shb__note {
+  color: var(--tx-3);
+  font-size: 11.8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- 「酿造日选哪一锅」：只在那一行下面出现，且不缩进到看不清主人 ---- */
+.shb__sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 10px 6px 36px;
+}
+.shb__sub-label {
+  font-size: 12px;
+  color: var(--tx-3);
+  white-space: nowrap;
+}
+.shb__sel {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 26px;
+  font-size: 12.4px;
+  padding: 0 6px;
+}
+
+/* 出现"超限出路"卡片时：列表收窄，把空间让给那张卡片。
+   勾选这一步已经结束，用户此刻要看的是"改成什么形式发出去"。 */
+.shb.is-compact .shb__list { max-height: 92px; }
+
+/* ---- 超限出路：一张带按钮的卡片，不是一句 toast ----
+   用户勾多了以后分享码发不出去，这里必须给"换成 JSON 文件"的下一跳。
+   用实心边框而不是 .alert 的浅底：它是**可操作**的东西，不是提示文字。 */
+.shb-esc {
+  margin-top: 8px;
+  padding: 9px 11px;
+  border: 1px solid var(--amber-line);
+  border-left: 3px solid var(--amber);
+  border-radius: var(--r);
+  background: var(--amber-tint);
+}
+.shb-esc__t {
+  font-size: 13px;
+  color: var(--tx-1);
+  margin-bottom: 4px;
+}
+.shb-esc__t b {
+  color: var(--amber-soft);
+  font-variant-numeric: tabular-nums;
+}
+.shb-esc__p {
+  font-size: 12.4px;
+  line-height: 1.55;
+  color: var(--tx-2);
+  margin-bottom: 8px;
+}
+.shb-esc__p b { color: var(--tx-1); }
+.shb-esc .btn { margin-top: 1px; }
+
+/* ---- 窄窗口：字符数列让位，先保住"块名 + 条数" ---- */
+@media (max-width: 1180px) {
+  .shb__row {
+    grid-template-columns: 18px minmax(64px, max-content) 56px minmax(0, 1fr);
+  }
+  .shb__c { display: none; }
+  .shb__note { display: none; }
+}

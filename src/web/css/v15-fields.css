@@ -1,0 +1,169 @@
+/* ============================================================================
+ * 风月酿研所 — css/v15-fields.css
+ * ----------------------------------------------------------------------------
+ * 职责：数值输入框的尺寸与「不合理值」的视觉反馈（v1.5 需求 1、2）。
+ *
+ * 为什么单开一个文件而不是继续往 style.css 里堆：
+ *   style.css 已经 4,400+ 行，而这一批有两个人同时在动样式（全站字号下限 / 间距压缩
+ *   在 style.css，输入框与校验在这里）。同一文件两个写者必然互相覆盖。
+ *   分开之后各自只碰自己的文件，index.html 里的 <link> 顺序由负责人统一加。
+ *
+ * 约定：本文件只负责 .fld-* 前缀的类，不改任何已有选择器。
+ *
+ * 颜色令牌全部取自 style.css 的 :root（--bad / --amber / --bad-tint …），
+ * 没有新造颜色。数值框的宽度单位用 ch：
+ *   TNR 的数字是等宽 0.5em，1ch 在 15.5px 字号下约 7.75px，5 位数 ≈ 39px，
+ *   加上 padding/边框仍远小于原来撑满栅格的 200px。
+ *   中文输入框不适用这个公式——所以 .fld 只挂在数值 input 上，文本类保持原样。
+ * ==========================================================================*/
+
+/* ---------------------------------------------------------- 1. 宽度档位 */
+/* data-w 是「这个框最长要放几个字符」，由 JS 写在 input 上。
+   --wch 只做一层转发，宽度的实际计算集中在下面的 .fld 里。 */
+.fld[data-w="1"]  { --wch: 1; }
+.fld[data-w="2"]  { --wch: 2; }
+.fld[data-w="3"]  { --wch: 3; }
+.fld[data-w="4"]  { --wch: 4; }
+.fld[data-w="5"]  { --wch: 5; }
+.fld[data-w="6"]  { --wch: 6; }
+.fld[data-w="7"]  { --wch: 7; }
+.fld[data-w="8"]  { --wch: 8; }
+.fld[data-w="9"]  { --wch: 9; }
+.fld[data-w="10"] { --wch: 10; }
+.fld[data-w="11"] { --wch: 11; }
+.fld[data-w="12"] { --wch: 12; }
+
+/* 常态窄宽。26px = 左右 padding（10+10）+ 边框（1+1）+ 4px 余量。
+   这个余量不是浪费：TNR 的 '1' 比 '0' 窄，但等宽数字下 1ch 就是 '0' 的宽度，
+   ch 已经偏保守；余量用来兜住 letter-spacing 与不同 DPI 的取整。 */
+.fld {
+  width: calc(var(--wch, 5) * 1ch + 26px);
+  /* 不用 max-width:100%：极长的数值宁可把框撑出栅格一格，也不能被父级裁掉。
+     数值被裁掉时用户看到的是一位"错的数"，比布局难看严重得多。 */
+  text-overflow: clip;
+}
+
+/* 表格里的微型输入：字体 15px、padding 4px 6px，所以 overhead 只需 15px。
+   60px 的麦芽用量框 + 15px 的 kg 单位，正好落在 92px 列宽里。 */
+.cell-input.fld {
+  width: calc(var(--wch, 5) * 1ch + 15px);
+  flex: 0 0 auto;
+}
+/* 收窄后输入框只占自己那么宽，表格单元格里会剩下空白。
+   数字列的表头是右对齐的，让输入框靠右，数字才会和表头对齐；
+   否则「4.20 kg」会飘在 92px 列的最左边。 */
+.cell-unit-row > .fld {
+  margin-left: auto;
+}
+
+/* unitWrap 生成的框原来为右侧绝对定位的单位预留 42px，把数字挤到左边一小条。
+   收窄之后这 42px 比数字本身还宽，必须让单位回到流内、紧跟输入框。 */
+.input-wrap > .input.fld {
+  padding-right: 10px;
+  flex: 0 0 auto;
+}
+.input-wrap > .input.fld + .input-wrap__unit {
+  position: static;
+  right: auto;
+  margin-left: 4px;
+  flex: 0 0 auto;
+}
+
+/* JS 量出文本更宽时会写 inline width，并挂 is-wide。
+   这里只做一件事：保证 is-wide 状态下不做任何截断。 */
+.fld.is-wide {
+  text-overflow: clip;
+}
+
+/* ------------------------------------------------- 2. 不合理值的边框 */
+/* 三档：ok / empty 无样式；soft 琥珀；hard 红。
+   **不用 :invalid**：原生 :invalid 会把「空但必填」也标红，
+   而本项目的口径是「没填不算错」（见 js/39a-field-rules.js 头部）。 */
+.fld[data-lvl="soft"] {
+  border-color: var(--amber);
+  background: var(--amber-tint);
+}
+.fld[data-lvl="soft"]:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 2px var(--amber-glow);
+}
+.fld[data-lvl="hard"] {
+  border-color: var(--bad);
+  background: var(--bad-tint);
+}
+.fld[data-lvl="hard"]:focus {
+  border-color: var(--bad);
+  box-shadow: 0 0 0 2px var(--bad-tint-2);
+}
+
+/* ---------------------------------------------------- 3. 框下的说明 */
+/* 文案来自 39a 的 why：红/黄必须能回答"凭什么"。
+   12.5px 而不是 11px：这段字是给人读的判据，不是脚注。 */
+.fld-msg {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--amber);
+}
+.fld-msg[data-lvl="soft"] { color: var(--amber); }
+.fld-msg[data-lvl="hard"] { color: var(--bad); }
+
+/* 表格行的提示不能塞进 84px 的单元格——那句 why 有 40–60 个汉字，
+   塞进去会变成 8 行、把整张表撑变形。改为在该行下面插一条整行提示。 */
+tr.fld-msg-row > td {
+  padding: 0 8px 6px;
+  border-top: 0;
+  background: transparent;
+}
+tr.fld-msg-row .fld-msg {
+  margin: 0 0 3px;
+  padding: 4px 8px;
+  border-left: 2px solid currentColor;
+  border-radius: 3px;
+  background: var(--amber-tint);
+}
+tr.fld-msg-row .fld-msg[data-lvl="hard"] {
+  background: var(--bad-tint);
+}
+
+/* ------------------------------------------- 4. 关系规则（比例类） */
+/* BU:GU、SO₄:Cl、深色麦芽占比、装瓶量 vs 入罐量、FG vs OG。
+   这些是"每一格单看都正常、合起来说不通"的错，必须单独占一行。 */
+.fld-rel {
+  margin-top: 8px;
+}
+.fld-rel:empty {
+  display: none;
+  margin: 0;
+}
+.fld-rel .fld-msg--rel {
+  margin: 0 0 5px;
+  padding: 5px 8px;
+  border-left: 2px solid var(--amber);
+  border-radius: 3px;
+  background: var(--amber-tint);
+  color: var(--amber-soft);
+}
+.fld-rel .fld-msg--rel[data-lvl="hard"] {
+  border-left-color: var(--bad);
+  background: var(--bad-tint);
+  color: var(--bad);
+}
+/* 麦芽表是 flush 卡片（内容贴边），合计行下面的提示要自己补回左右留白 */
+.card__body--flush > #malt-rel {
+  padding: 0 14px 10px;
+}
+
+/* 打印：红色在黑白打印机上会变成灰，但左边框与文字仍在。
+   这里只是把 tint 去掉，避免大面积色块吃掉碳粉。 */
+@media print {
+  .fld[data-lvl="soft"],
+  .fld[data-lvl="hard"] {
+    background: transparent;
+  }
+  .fld-rel .fld-msg--rel,
+  tr.fld-msg-row .fld-msg {
+    background: transparent;
+  }
+}

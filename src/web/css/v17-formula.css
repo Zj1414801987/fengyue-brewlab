@@ -1,0 +1,623 @@
+/* ============================================================================
+ * 风月酿研所 — v17 公式面板样式（43a-formulas 的 UI）
+ * ----------------------------------------------------------------------------
+ * 规矩（与 v17-combo.css 同一套）：
+ *   · **只新增 .fx-* 类**，不改 css/style.css 里任何既有规则
+ *   · 字号一律从令牌取（--fs-l4-label / --fs-l3-panel …），不写裸 px
+ *   · 不用 backdrop-filter：模态已经有 --scrim 遮罩，再叠模糊会让
+ *     1080 档的滚动变成幻灯片（v1.5 试过，回退了）
+ *   · 数字用 --num（TNR 的数字天然等宽），代码串用 --mono
+ *
+ * 视觉分工：
+ *   内核值 = 弱色（它是"事实"，不需要抢注意力）
+ *   你的公式值 = 正文色 + 600 字重（它是"你正在看的东西"）
+ *   偏离内核 = 只在真的不一样时出现一个红徽章，不给整行染色 ——
+ *             整行染色会让"我改常量"这件正常操作看起来像出错
+ * ========================================================================== */
+
+/* ------------------------------------------------------------------ 骨架 */
+.fx {
+  /* 模态 body 自带 16px 内边距；页签条要压到边上，与 .tabs 的 border-bottom 对齐 */
+  margin: -4px 0 0;
+}
+
+.fx-tabs {
+  margin: -16px -16px 12px;
+}
+
+.fx-pane {
+  min-height: 200px;
+}
+
+/* --------------------------------------------------------------- 工具条 */
+.fx-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 12px;
+}
+
+.fx-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--tx-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.fx-check input {
+  margin: 0;
+  accent-color: var(--amber);
+}
+
+.fx-hint {
+  font-size: 12.5px;
+  color: var(--tx-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.fx-bad { color: var(--bad); }
+.fx-strong { color: var(--tx-1); }
+.fx-dim { color: var(--tx-3); font-size: 12.5px; line-height: 1.65; }
+
+/* --------------------------------------------------------------- 分组 */
+.fx-group { margin: 0 0 16px; }
+
+.fx-group__t {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-l4-label);
+  letter-spacing: var(--ls-l4);
+  text-transform: uppercase;
+  color: var(--struct-soft);
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.fx-group__t::before {
+  content: "";
+  width: var(--bar-l3-w);
+  height: var(--bar-l3-h);
+  border-radius: 1px;
+  background: var(--amber);
+}
+
+.fx-group__t span {
+  font-family: var(--num);
+  font-size: 12px;
+  letter-spacing: 0;
+  color: var(--tx-3);
+  font-weight: 400;
+}
+
+/* --------------------------------------------------------------- 条目 */
+.fx-entry {
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+.fx-entry__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 11px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 13.5px;
+  transition: background var(--t) var(--ease);
+}
+
+.fx-entry__head::-webkit-details-marker { display: none; }
+.fx-entry__head:hover { background: var(--bg-hover); }
+
+.fx-entry__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--tx-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fx-entry__vals {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-family: var(--num);
+  font-variant-numeric: tabular-nums;
+}
+
+.fx-v {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 13.5px;
+}
+
+.fx-v i {
+  font-style: normal;
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--tx-3);
+  letter-spacing: .3px;
+}
+
+.fx-v--k { color: var(--tx-3); }
+.fx-v--m { color: var(--tx-1); font-weight: 600; }
+.fx-entry.is-edited .fx-v--m { color: var(--amber-soft); }
+
+.fx-entry__unit {
+  font-family: var(--sans);
+  font-size: 11.5px;
+  color: var(--tx-3);
+  min-width: 26px;
+}
+
+.fx-entry__body {
+  padding: 2px 11px 12px;
+  border-top: 1px solid var(--line);
+  background: var(--bg-1);
+}
+
+/* --------------------------------------------------------------- 徽章 */
+.fx-badge {
+  display: inline-block;
+  padding: 0 5px;
+  border-radius: var(--r-xs);
+  font-family: var(--sans);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--amber-soft);
+  background: var(--amber-tint);
+  border: 1px solid var(--amber-line);
+}
+
+.fx-badge--bad {
+  color: var(--bad);
+  background: rgba(163, 51, 39, .08);
+  border-color: rgba(163, 51, 39, .26);
+}
+
+.fx-tag {
+  display: inline-block;
+  padding: 0 4px;
+  margin-left: 4px;
+  border-radius: var(--r-xs);
+  font-family: var(--sans);
+  font-size: 10.5px;
+  line-height: 15px;
+  color: var(--tx-3);
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  vertical-align: 1px;
+}
+
+/* --------------------------------------------------------- 代入串 */
+.fx-sub {
+  display: block;
+  margin: 10px 0 8px;
+  padding: 9px 11px;
+  border-radius: var(--r-sm);
+  background: var(--bg-inset);
+  border: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.72;
+  color: var(--tx-1);
+  white-space: pre-wrap;
+  word-break: break-word;
+  /* 代入串可能很长（多行酒花展开），横向一律换行而不是出滚动条：
+     滚动条会把"结果"藏在右边看不见的地方，而结果正是用户要找的 */
+}
+
+.fx-err {
+  margin: 8px 0;
+  font-size: 12.5px;
+  color: var(--bad);
+  line-height: 1.6;
+}
+
+/* ------------------------------------------------------- 参数 / 常量块 */
+.fx-block { margin: 10px 0 0; }
+
+.fx-block__t {
+  font-size: 11.5px;
+  letter-spacing: .5px;
+  color: var(--tx-3);
+  margin-bottom: 5px;
+}
+
+.fx-params {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.fx-params th {
+  text-align: left;
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: .4px;
+  color: var(--tx-3);
+  padding: 3px 6px 4px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.fx-params td {
+  padding: 3px 6px 3px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--tx-2);
+  vertical-align: baseline;
+}
+
+.fx-params tr:last-child td { border-bottom: 0; }
+
+.fx-params code {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--struct-dim);
+}
+
+.fx-num {
+  font-family: var(--num);
+  font-variant-numeric: tabular-nums;
+  color: var(--tx-1);
+}
+
+.fx-unit {
+  font-family: var(--sans);
+  font-size: 11.5px;
+  color: var(--tx-3);
+  white-space: nowrap;
+}
+
+.fx-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.fx-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--tx-2);
+}
+
+.fx-chip b {
+  font-family: var(--num);
+  font-variant-numeric: tabular-nums;
+  color: var(--tx-1);
+  font-weight: 600;
+}
+
+.fx-chip i {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--tx-3);
+}
+
+.fx-chip.is-changed {
+  border-color: var(--amber-line);
+  background: var(--amber-tint);
+}
+
+/* ------------------------------------------------------------ 出处 */
+.fx-src,
+.fx-note {
+  margin: 9px 0 0;
+  font-size: 12px;
+  line-height: 1.72;
+  color: var(--tx-3);
+}
+
+.fx-src b,
+.fx-note b {
+  display: inline-block;
+  margin-right: 6px;
+  font-weight: 600;
+  color: var(--tx-2);
+  font-size: 11.5px;
+}
+
+.fx-note { color: var(--tx-2); }
+
+/* ------------------------------------------------------------ 常量表 */
+.fx-impact {
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--amber-line);
+  background: var(--amber-tint);
+}
+
+.fx-impact__head {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tx-1);
+  margin-bottom: 6px;
+}
+
+.fx-impact p { margin: 4px 0 0; }
+
+.fx-impact__list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  font-size: 12.5px;
+}
+
+.fx-impact__list li {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  flex-wrap: wrap;
+  padding: 3px 0;
+  border-top: 1px dashed var(--line);
+}
+
+.fx-impact__list li:first-child { border-top: 0; }
+.fx-impact__list li > span { color: var(--tx-2); min-width: 96px; }
+
+.fx-impact__list b {
+  font-family: var(--num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+  color: var(--tx-3);
+}
+
+.fx-impact__list b.fx-strong { color: var(--tx-1); font-weight: 700; }
+
+.fx-impact__list i {
+  font-style: normal;
+  color: var(--tx-3);
+  font-size: 11px;
+}
+
+.fx-impact__list em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--bad);
+}
+
+.fx-impact__list small {
+  flex: 1 0 100%;
+  font-size: 11px;
+  color: var(--tx-3);
+  padding-left: 103px;
+}
+
+.fx-constwrap {
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: var(--bg-2);
+}
+
+.fx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.fx-table th {
+  text-align: left;
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: .4px;
+  color: var(--tx-3);
+  padding: 7px 10px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.fx-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  color: var(--tx-2);
+}
+
+.fx-table tr:last-child td { border-bottom: 0; }
+.fx-table tr.is-bad td { background: rgba(163, 51, 39, .05); }
+
+.fx-cname {
+  color: var(--tx-1);
+  min-width: 190px;
+}
+
+.fx-cdoc {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--tx-3);
+  margin-top: 3px;
+  max-width: 380px;
+  /* 30 行 × 3 行说明 = 一整屏的滚动。收成两行，全文在 title 里 ——
+     用户扫表时看得见"这是什么"，想知道"改了会怎样"再悬停。 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.fx-input {
+  width: 96px;
+  text-align: right;
+  font-family: var(--num);
+  font-variant-numeric: tabular-nums;
+  padding: 4px 8px;
+  font-size: 12.5px;
+}
+
+.fx-cdef,
+.fx-crange,
+.fx-caff {
+  font-family: var(--num);
+  font-variant-numeric: tabular-nums;
+  color: var(--tx-3);
+  white-space: nowrap;
+}
+
+.fx-foot {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.72;
+  color: var(--tx-3);
+}
+
+/* ------------------------------------------------------------ 我的版本 */
+.fx-vers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.fx-ver {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+}
+
+.fx-ver.is-active {
+  border-color: var(--amber-line);
+  background: var(--amber-tint);
+}
+
+.fx-ver__main { flex: 1 1 auto; min-width: 0; }
+
+.fx-ver__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  color: var(--tx-1);
+  flex-wrap: wrap;
+}
+
+.fx-ver__meta {
+  font-size: 11.5px;
+  color: var(--tx-3);
+  margin-top: 3px;
+  line-height: 1.55;
+}
+
+.fx-ver__acts {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fx-save {
+  margin-bottom: 14px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+}
+
+.fx-save .fx-input { width: auto; flex: 1 1 220px; text-align: left; }
+
+.fx-share {
+  margin-bottom: 14px;
+  padding: 11px 12px;
+  border: 1px solid var(--amber-line);
+  border-radius: var(--r-sm);
+  background: var(--amber-tint);
+}
+
+.fx-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.fx-code {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.6;
+  resize: vertical;
+  word-break: break-all;
+}
+
+.fx-empty {
+  padding: 22px 4px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--tx-3);
+  line-height: 1.7;
+}
+
+/* ---------------------------------------------------------- 窄屏收紧 */
+@media (max-width: 720px) {
+  .fx-entry__head { flex-wrap: wrap; }
+  .fx-entry__vals { gap: 8px; }
+  .fx-cdoc { display: none; }        /* 720 档表格已经很挤，说明文字走 title */
+  .fx-table th:nth-child(4),
+  .fx-table td:nth-child(4),
+  .fx-table th:nth-child(6),
+  .fx-table td:nth-child(6) { display: none; }
+}
+
+/* --------------------------------------------------------- 逐行明细表 */
+.fx-rowtable th small {
+  display: block;
+  font-size: 10px;
+  color: var(--tx-4);
+  letter-spacing: 0;
+}
+
+.fx-rowname {
+  color: var(--tx-1);
+  white-space: nowrap;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fx-rowtable tfoot td {
+  border-top: 1px solid var(--line-2, var(--line));
+  border-bottom: 0;
+  color: var(--tx-3);
+  font-size: 11.5px;
+}
+
+.fx-rowtable tfoot .fx-num { color: var(--tx-1); font-weight: 700; }
+
+/* 逐行表在窄屏可以横向滚：它是唯一"横向比纵向更重要"的表
+   （列是参数类别，行是原料；折行会让同一列上下对不齐） */
+@media (max-width: 720px) {
+  .fx-rowtable { display: block; overflow-x: auto; white-space: nowrap; }
+}
+
+/* 常量表的「已改」徽章：始终存在、切类显隐（避免重绘抢焦点） */
+.fx-badge.is-hidden { display: none; }

@@ -1,0 +1,200 @@
+/* ============================================================================
+ * 风月酿研所 — v17 外壳：分享中心
+ * ----------------------------------------------------------------------------
+ * v1.8：原来第一节「功能区横排（v1.7）」已整块删除 —— 用户要求功能区回到
+ *   v1.4「Aspen Plus 那一版」（按钮在上、分区名在下），横排相关的
+ *   --ribbon-panel-h:60 / .rb-rows--h / .rb-group--h / .rb-btn--h 全部作废。
+ *   新的功能区规则在 css/v18-shell.css，那边的注释写明为什么弃用横排。
+ *   本文件从此只负责分享中心（sh-*），不再碰功能区。
+ * ==========================================================================*/
+
+/* ==========================================================================
+ * 二、分享中心（v1.7）
+ * --------------------------------------------------------------------------
+ * 结构见 js/41-ui-share.js：类型胶囊 → 生成区 / 导入区。
+ * 只加新类，.share-grid / .share-block / .share-code 等沿用 style.css。
+ * ==========================================================================*/
+
+/* ---- 类型胶囊：11 个，一行放不下就换行（这是"选对象"，不是功能区，
+        没有高度硬约束，允许两行） ---- */
+.sh-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--bg-1);
+}
+.sh-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 9px;
+  border-radius: 13px;
+  font-size: 12.8px;
+  color: var(--tx-2);
+  border: 1px solid transparent;
+  white-space: nowrap;
+  transition: background var(--t) var(--ease), color var(--t) var(--ease),
+              border-color var(--t) var(--ease);
+}
+.sh-type:hover { background: var(--bg-hover); color: var(--tx-1); }
+.sh-type.is-on {
+  background: var(--amber-tint-2);
+  border-color: var(--amber-line);
+  color: var(--amber-soft);
+  font-weight: 600;
+}
+.sh-type.is-on svg { color: var(--amber); opacity: 1; }
+.sh-type svg { opacity: .8; }
+
+/* ---- 分享哪一条（下拉） ---- */
+.sh-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.sh-pick[hidden] { display: none; }
+.sh-pick__label {
+  font-size: 12.8px;
+  color: var(--tx-3);
+  white-space: nowrap;
+}
+.sh-pick__sel {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 28px;
+  font-size: 13px;
+  padding: 0 8px;
+}
+
+/* ---- "将要分享什么" ---- */
+.sh-src {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 18px;
+}
+.sh-src__ok,
+.sh-src__bad {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.sh-src__ok { color: var(--tx-1); }
+.sh-src__ok b {
+  flex: 0 0 auto;
+  font-weight: 600;
+  color: var(--amber-soft);
+  letter-spacing: .04em;
+}
+.sh-src__ok svg { color: var(--ok); flex: 0 0 auto; align-self: center; }
+.sh-src__bad { color: var(--warn); }
+.sh-src__bad svg { flex: 0 0 auto; align-self: center; }
+.sh-src__note {
+  color: var(--tx-3);
+  font-size: 12.5px;
+  padding-left: 19px;
+}
+
+/* ---- 体量条：字符数 / 上限 / 百分比 ----
+   为什么要有条而不是只写数字：1200 与 3900 都是"没超"，但风险差三倍，
+   数字要读，条只需看一眼。 */
+.sh-meterwrap { margin-top: 7px; }
+.sh-meterwrap:empty { display: none; }
+.sh-meter {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--bg-inset);
+  overflow: hidden;
+}
+.sh-meter > i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--struct);
+  transition: width var(--t) var(--ease);
+}
+.sh-meter.is-warn > i { background: var(--amber); }
+.sh-meter.is-over > i { background: var(--bad); }
+.sh-meter__num {
+  margin-top: 3px;
+  font-family: var(--num);
+  font-size: 12.5px;
+  color: var(--tx-3);
+}
+
+/* ---- 导入：识别结果的一行 ---- */
+.sh-detect {
+  margin-top: 7px;
+  min-height: 0;
+  font-size: 13px;
+  color: var(--tx-2);
+}
+.sh-detect:empty { display: none; }
+.sh-detect__kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--struct-tint);
+  color: var(--struct-soft);
+  font-size: 12.8px;
+}
+
+/* ---- 预览卡：确认之前让用户看清"会发生什么" ---- */
+.sh-preview {
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg-1);
+  padding: 9px 11px 10px;
+}
+.sh-preview__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tx-1);
+  margin-bottom: 6px;
+}
+.sh-preview__title svg { color: var(--ok); flex: 0 0 auto; }
+.sh-preview__rows {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 3px 12px;
+  font-size: 12.8px;
+  line-height: 1.5;
+}
+.sh-preview__k { color: var(--tx-3); white-space: nowrap; }
+.sh-preview__v { color: var(--tx-1); word-break: break-word; }
+.sh-preview__note {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 7px;
+  font-size: 12.5px;
+  color: var(--warn);
+}
+/* 后果说明用虚线框而不是黄条：它不是警告，是"点下去会怎样"的说明书 */
+.sh-preview__con {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px dashed var(--bd-1, var(--line));
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--tx-2);
+}
+
+/* 980 以下单列（与 style.css 的 .share-grid 断点一致） */
+@media (max-width: 980px) {
+  .sh-pick { flex-wrap: wrap; }
+}

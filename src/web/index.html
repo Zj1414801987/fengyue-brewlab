@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="description" content="风月酿研所 — 精酿啤酒配方设计与酿造记录系统">
+<title>风月酿研所 · 精酿配方与酿造记录</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2312100d'/%3E%3Cpath d='M11 6h10l-1.2 5.2c2.4 1.6 3.7 4 3.7 6.9 0 4.9-3.4 8.4-7.5 8.4S8.5 23 8.5 18.1c0-2.9 1.3-5.3 3.7-6.9L11 6z' fill='none' stroke='%23e8a33d' stroke-width='1.8' stroke-linejoin='round'/%3E%3Cpath d='M11.5 18.5c2.6-1.6 6.4-1.6 9 0' fill='none' stroke='%23e8a33d' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/v12-analysis.css">
+<!-- v1.5：输入框与校验 / 酒标编辑器各占一个文件。
+     不并进 style.css，是因为同一批里有另一个人在改 style.css 的字号与间距，
+     一个文件两个写者必然互相覆盖。加载顺序在 style.css 之后，可覆盖其默认值。 -->
+<link rel="stylesheet" href="css/v15-fields.css">
+<link rel="stylesheet" href="css/v15-label.css">
+<!-- v1.7：两个只加新类的样式表。分开文件的理由见各自文件头 ——
+     v17-combo 是"浮层必须 body 挂载"的落地，v17-formula 是公式面板。 -->
+<link rel="stylesheet" href="css/v17-combo.css">
+<link rel="stylesheet" href="css/v17-formula.css">
+<link rel="stylesheet" href="css/v17-shell.css">
+<!-- v1.8：功能区复原到 v1.4 形态 + 区域内部元素边界。只加新规则（全部包在
+     @media screen 里，不碰打印几何）；加载顺序在 v17-shell 之后，
+     用同等特异性 + 顺序取胜，不写 !important。 -->
+<link rel="stylesheet" href="css/v18-shell.css">
+<!-- v1.8：分享中心的勾选面板 / 压缩包信息 / JSON 导入导出。由我（lead）统一
+     挂引用：各组自己新建 CSS 文件，但只有一处集中维护 <link> 顺序，
+     避免多人同时改 head 把彼此的引用冲掉。 -->
+<link rel="stylesheet" href="css/v18-share.css">
+</head>
+<body>
+
+<!-- 应用外框：Shell 会填充 #app，并接管 #view 的渲染 -->
+<div class="app" id="app" aria-busy="true">
+
+  <!-- 左侧面板（v1.6）：常驻搜索 + 配方 / 工艺 / 实操 三棵树。
+       原来的 10 项视图导航已整块并入功能区「视图」页签（Alt+1..0 仍是直达），
+       左侧不再承担"切视图"，只回答"我手头有什么、下一步做什么"。
+       内容由 js/39c-ui-leftpanel.js 填充；脚本没跑起来时这里是一块空壳，不报错。 -->
+  <aside class="sidebar" id="sidebar" aria-label="配方、工艺与实操">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+          <path d="M11 5.5h10l-1.2 5.3c2.4 1.7 3.7 4.1 3.7 7 0 5-3.4 8.6-7.5 8.6S8.5 22.8 8.5 17.8c0-2.9 1.3-5.3 3.7-7L11 5.5z"/>
+          <path d="M11.6 18.2c2.6-1.7 6.2-1.7 8.8 0" stroke-linecap="round"/>
+          <circle cx="13.4" cy="14.2" r=".9" fill="currentColor" stroke="none"/>
+          <circle cx="16.6" cy="16.4" r=".9" fill="currentColor" stroke="none"/>
+          <circle cx="18.6" cy="13.2" r=".9" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
+      <span class="brand__text">
+        <b>BrewLab</b>
+        <i>酿研所 <em id="brand-ver">v1.6</em></i>
+      </span>
+    </div>
+
+    <div class="lp" id="leftpanel">
+      <div class="lp__placeholder">载入搜索与目录…</div>
+    </div>
+
+    <div class="sidebar__foot" id="sidebar-foot">
+      <div class="hint-box">
+        <strong>数据口径</strong>
+        <p>原料参数均为标称值，A 级 = 多源交叉验证，C 级需查厂商 COA 后再用于生产批次。</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 右侧主区 -->
+  <div class="main">
+    <header class="topbar" id="topbar">
+      <!-- 左面板开合（v1.6）。左侧原来是一列导航，收起只影响导航；
+           现在整块面板折叠成 0 宽，若只留功能区里那颗「收起」，用户会找不到回来的路。
+           这颗按钮常驻顶栏最左，Ctrl+B 同步，收起后它仍在原地。 -->
+      <button class="topbar__lp" id="top-btn-left" type="button" aria-pressed="true"
+              aria-label="显示或隐藏左侧面板" title="显示 / 隐藏左侧面板（Ctrl+B）">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+             stroke-width="1.7" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3.4" y="4.6" width="17.2" height="14.8" rx="1.6"/>
+          <path d="M9.4 4.6v14.8"/>
+        </svg>
+      </button>
+      <div class="topbar__id">
+        <!-- v1.9：删掉眉标「当前配方」。用户原话是"中间最上面的那个当前配方
+             几个字删掉吧，有点不协调"——它和下面的配方名是重复信息，
+             而且占掉一整行的高度。
+             删掉之后有两个连带影响，都已在别处处理：
+               · 40-ui-shell 的 computeTopNameMax() 里 ebW 变成 0（它本来就是
+                 空安全写法），配方名可拖的最大宽度反而增加了约 70px；
+               · CSS 里 .topbar__eyebrow 的规则保留（没人用等于死规则，
+                 但删掉风险更大：万一别处还有引用）。 -->
+        <div class="topbar__namebox" id="topbar-namebox">
+          <h1 class="topbar__name" id="top-recipe-name" title="未命名配方">未命名配方</h1>
+          <div class="resizer resizer--x topbar__nameres" id="topbar-name-resizer" tabindex="0"
+               role="separator" aria-orientation="vertical"
+               aria-label="调整配方名宽度（双击或 Home 复位）"></div>
+        </div>
+      </div>
+      <div class="pills" id="top-pills" aria-live="polite">
+        <span class="pill pill--muted">等待引擎…</span>
+      </div>
+      <div class="topbar__actions">
+        <button class="btn btn-ghost btn-sm" id="top-btn-new" type="button">新建</button>
+        <button class="btn btn-primary btn-sm" id="top-btn-save" type="button">保存配方</button>
+      </div>
+    </header>
+
+    <!-- 功能区（v1.4）：页签条 + 面板，由 40-ui-shell.js 的 Shell.initRibbon() 填充。
+         空容器在 CSS 里 `:empty { display:none }`，脚本没跑起来时不会留一条空带。
+         注意：功能区里的按钮**不用** data-view 属性 —— tools/ 下多个测试脚本
+         用 `document.querySelector('[data-view="batch"]')` 找导航项，v1.6 起
+         导航已不存在，视图入口只剩功能区的 data-go；保留这条约定是为了让
+         "一次点击只落在一个元素上"，不出现两个同名入口抢同一次点击。 -->
+    <div class="ribbon" id="ribbon"></div>
+
+    <main class="view" id="view" tabindex="-1">
+      <!-- 启动占位：60-app.js 成功启动后会被首屏视图替换 -->
+      <div class="boot" id="boot">
+        <div class="boot__mark" aria-hidden="true">
+          <svg viewBox="0 0 120 120" width="112" height="112" fill="none" stroke="#e8a33d" stroke-width="3" stroke-linejoin="round">
+            <path d="M40 20h40l-4.6 21C86 49.5 91 59 91 70.5 91 90 75 104 60 104S29 90 29 70.5C29 59 34 49.5 44.6 41L40 20z" opacity=".9"/>
+            <path d="M31.5 72c16-9 41-9 57 0" stroke-width="2.6" stroke-linecap="round"/>
+            <circle cx="48" cy="56" r="3" fill="#e8a33d" stroke="none" opacity=".8"/>
+            <circle cx="61" cy="62" r="3" fill="#e8a33d" stroke="none" opacity=".6"/>
+            <circle cx="70" cy="53" r="2.4" fill="#e8a33d" stroke="none" opacity=".7"/>
+            <path d="M60 111v6" stroke-width="2.4" stroke-linecap="round" opacity=".5"/>
+          </svg>
+        </div>
+        <p class="boot__text">正在初始化酿造引擎…</p>
+        <div class="boot__bar"><i></i></div>
+        <p class="boot__sub">载入原料库 · 计算内核 · 界面骨架</p>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Toast 与模态框挂载点 -->
+<div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+<div class="modal-root" id="modal-root" hidden></div>
+
+<noscript>
+  <div class="noscript">
+    <h2>需要启用 JavaScript</h2>
+    <p>风月酿研所 的配方计算与界面渲染全部在浏览器本地完成，请启用 JavaScript 后刷新页面。</p>
+  </div>
+</noscript>
+
+<!-- ==========================================================================
+    脚本装载顺序即依赖顺序（file:// 直开，无构建、无模块系统）
+      00 核心        SE 命名空间 / RNG / 事件总线 / 存储
+      05 单位        SG↔°P、Brix、色度、温度校正
+      10-15 原料库   麦芽 / 酒花 / 酵母 / 辅料 / 水 / BJCP 风格
+      16-18 术语库   指标 · 工艺 · 原料 三类术语卡
+      19 术语标注    依赖 16-18 的术语表
+      23 用量阈值    分类阈值 + 酒花预算 + 文案模板
+      24 覆盖文案    29 条原料的定制告警（覆盖 23 的通用模板）
+      20 计算        核心引擎，吃 23 / 24 的审计数据 —— 必须排在它们之后
+      25-28 扩展计算  感知苦度 / 酵母扩培 / 水质匹配 / 分享码
+                      （前三个只吃 calc；28 要构造配方对象，排在 30 之后）
+      22 知识卡      70 条 tips 数据（无依赖，位置仅需早于 57）
+      30 配方模型    模型 + 预设 + fromStyle()
+      31 经典配方库  加载时即调 Recipe.blank() —— 必须排在 30 之后
+      32-33 比对与库存 逐行 diff / 库存缺口，读 30 的行结构
+      35 批次模型    读数、发酵曲线、FG 预测
+      40-58 界面     40 骨架 → 42 配方 → 44 原料 → 46 批次 → 48 图表
+                     → 50 工具 → 55 报告 → 56 术语卡 → 57 知识卡 → 58 设置
+                     41 分享 / 43 对比 / 47 库存面板是 40 系的子模块，紧跟宿主
+      60 启动        注册视图、引导首屏
+    v1.1 新增文件：16 / 17 / 18 / 19 / 22 / 23 / 24 / 31 / 52 / 56 / 57 / 58
+    v1.2 新增文件：21 / 25 / 26 / 27 / 28 / 29 / 32 / 33 / 34 / 36 / 37 / 38
+                  / 41 / 43 / 45 / 47（Wave 1 界面）
+                  / 49（酒标）/ 59（品鉴）
+    v1.6 新增文件：39c（左面板：搜索 + 三棵树）
+     ========================================================================== -->
+<script src="js/00-core.js"></script>
+<script src="js/05-units.js"></script>
+<script src="js/10-data-malt.js"></script>
+<script src="js/11-data-hop.js"></script>
+<script src="js/12-data-yeast.js"></script>
+<script src="js/13-data-adjunct.js"></script>
+<script src="js/14-data-water.js"></script>
+<script src="js/15-data-style.js"></script>
+<script src="js/16-glossary-metric.js"></script>
+<script src="js/17-glossary-process.js"></script>
+<script src="js/18-glossary-material.js"></script>
+<script src="js/19-terms-annotate.js"></script>
+<!-- 21 品鉴锚点数据：和 10-15 / 22 / 23 同属数据区，必须在用它的 UI（59）之前 -->
+<script src="js/21-data-tasting.js"></script>
+<script src="js/23-data-usage.js"></script>
+<script src="js/24-data-usage-overrides.js"></script>
+<script src="js/20-calc.js"></script>
+<!-- v1.2 计算扩展：都吃 20-calc 的产出，必须排在 20 之后 -->
+<script src="js/25-calc-perceived.js"></script>
+<script src="js/26-calc-starter.js"></script>
+<script src="js/27-calc-water-match.js"></script>
+<script src="js/22-tips-data.js"></script>
+<script src="js/30-recipe.js"></script>
+<!-- 28 要 decode 出**完整配方对象**（Recipe.blank + 归一化），不是只吃 calc，
+     所以排在 30 之后；编号小不代表加载早，这里按真实依赖排 -->
+<script src="js/28-share-code.js"></script>
+<!-- 29 品鉴指引查询（21 的查询接口）：59 要用，文件头写明"排在 28 之后、30 之前" -->
+<script src="js/29-tasting-guide.js"></script>
+<script src="js/31-classic-recipes.js"></script>
+<!-- 32/33 逐行比对与库存缺口都要读配方行结构，同样排在 30 之后 -->
+<script src="js/32-recipe-diff.js"></script>
+<script src="js/33-inventory.js"></script>
+<!-- 34 谱系图：要读 Recipe.parentRef，排在 30 之后；数值上也在 33 之后 -->
+<script src="js/34-lineage-graph.js"></script>
+<script src="js/35-batch.js"></script>
+<!-- 36/37/38 都吃 35 的批次结构：酿造日计划 → 年度统计 → A/B 对比 -->
+<script src="js/36-brewday-plan.js"></script>
+<script src="js/37-calc-stats.js"></script>
+<script src="js/38-ab-compare.js"></script>
+<!-- v1.5 两个契约层，必须排在 40 之前：
+     39a 是**全站唯一一份**输入值范围表（配方页、批次页、原料库都读它）；
+     39b 是可拖动分隔条组件（左导航、酒标面板、批次列表、功能区高度共用）。
+     两者都不碰 DOM 结构，只提供函数，所以放这里不会有初始化顺序问题。 -->
+<script src="js/39a-field-rules.js"></script>
+<script src="js/39b-ui-resizer.js"></script>
+<script src="js/40-ui-shell.js"></script>
+<!-- v1.6 左面板（搜索 + 配方/工艺/实操三棵树）。编号 39c 是"契约层"的名字，
+     但它要用 UI.icon / UI.Shell.go / UI.store，所以真正的加载点紧跟 40。
+     与 41/43/47 同属"40 系的子模块，紧跟宿主"，不是编号越小加载越早。 -->
+<script src="js/39c-ui-leftpanel.js"></script>
+<script src="js/41-ui-share.js"></script>
+<!-- v1.6「运行 / 下一步 / 重置」+ 体检报告（41b）。
+     编号排在 41 之后、42 之前：它只用 40 已经建好的 UI.Shell / UI.store /
+     UI.calc 与自己内部的数据源，不依赖任何视图模块；47 的库存接口是运行时
+     才调用（打开面板时早已装载），所以不必等到 47 之后。
+     不改 42：配方页仍在另一个人手上。 -->
+<script src="js/41b-ui-runpanel.js"></script>
+<script src="js/42-ui-recipe.js"></script>
+<!-- 43a 公式模块：只读公式层 + 可调常量 + 可编辑表达式 + 分享码。
+     放在 42 之后：42 的指标格要调用它渲染"展开公式"，但它自己不注册视图。 -->
+<script src="js/43a-formulas.js"></script>
+<script src="js/43-ui-diff.js"></script>
+<script src="js/44-ui-ingredient.js"></script>
+<script src="js/45-ui-brewday.js"></script>
+<script src="js/46-ui-batch.js"></script>
+<script src="js/47-ui-inventory.js"></script>
+<script src="js/48-ui-charts.js"></script>
+<script src="js/49-ui-label.js"></script>
+<script src="js/50-ui-tools.js"></script>
+<script src="js/51-ui-analysis.js"></script>
+<script src="js/53-ui-lineage.js"></script>
+<script src="js/54-ui-ab.js"></script>
+<script src="js/52-ui-classic.js"></script>
+<script src="js/55-ui-report.js"></script>
+<script src="js/56-ui-terms.js"></script>
+<script src="js/57-ui-tips.js"></script>
+<script src="js/58-ui-settings.js"></script>
+<script src="js/59-ui-tasting.js"></script>
+<script src="js/60-app.js"></script>
+
+<script src="js/99-desktop.js"></script>
+</body>
+</html>
